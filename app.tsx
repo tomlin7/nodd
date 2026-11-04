@@ -7,6 +7,7 @@ import {
 import { Titlebar } from './src/components/Titlebar'
 import { Settings } from './src/components/Settings'
 import { RequestBuilder } from './src/components/RequestBuilder'
+import { ResponseViewer } from './src/components/ResponseViewer'
 import { TooltipProvider } from './src/components/tooltip-layer'
 import { C, FONT_MONO, FONT_SANS } from './src/theme'
 import type {
@@ -95,7 +96,6 @@ export function NoddApp() {
     const cols = [...collections]
     if (cols.length === 0) return
 
-    // Find and update or add to first collection
     let updated = false
     for (const c of cols) {
       const reqIdx = c.requests.findIndex((r) => r.id === currentRequest.id)
@@ -178,6 +178,11 @@ export function NoddApp() {
                 onChange={setCurrentRequest}
                 onSend={sendRequest}
                 onSave={saveCurrentRequest}
+                isLoading={isLoading}
+              />
+
+              <ResponseViewer
+                response={response}
                 isLoading={isLoading}
               />
             </div>
