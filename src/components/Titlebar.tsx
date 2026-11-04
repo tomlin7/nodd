@@ -118,20 +118,27 @@ export function Titlebar({
   requestName,
   method,
   environment,
+  environments = [],
   sidebarOpen,
   onToggleSidebar,
   settingsOpen,
   onOpenSettings,
+  onSelectEnvironment,
+  onOpenEnvironmentManager,
 }: {
   requestName?: string
   method?: HttpMethod
   environment?: Environment | null
+  environments?: Environment[]
   sidebarOpen: boolean
   onToggleSidebar: () => void
   settingsOpen: boolean
   onOpenSettings: () => void
+  onSelectEnvironment?: (env: Environment | null) => void
+  onOpenEnvironmentManager?: () => void
 }) {
   const methodColor = method ? C.methods[method] || C.accent : C.accent
+  const [envMenuOpen, setEnvMenuOpen] = useState(false)
 
   return (
     <div
@@ -236,7 +243,7 @@ export function Titlebar({
         </text>
       </DragRegion>
 
-      {/* Right controls: environment indicator + settings + window controls */}
+      {/* Right controls: environment selector dropdown + settings + window controls */}
       <div
         style={{
           display: 'flex',
@@ -246,35 +253,162 @@ export function Titlebar({
           flexShrink: 0,
         }}
       >
-        {environment && (
-          <div
+        {/* Environment Selector Dropdown */}
+        <div style={{ position: 'relative' }}>
+          <Button
+            testId="env-selector-button"
+            onClick={() => setEnvMenuOpen((prev) => !prev)}
             style={{
               display: 'flex',
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 5,
+              gap: 6,
               paddingLeft: 8,
               paddingRight: 8,
-              height: 24,
-              borderRadius: 5,
-              backgroundColor: C.surface,
+              height: 26,
+              borderRadius: 6,
+              backgroundColor: environment ? C.surface : 'transparent',
               borderWidth: 1,
-              borderColor: C.border,
+              borderColor: environment ? C.border : 'transparent',
+              cursor: 'pointer',
+              hover: { backgroundColor: C.surfaceHighlight },
             }}
           >
-            <Icon name="environment" size={11} color={C.secondary} />
+            <Icon name="environment" size={11} color={environment ? C.accent : C.tertiary} />
             <text
               style={{
                 fontSize: 11,
                 fontFamily: FONT_SANS,
-                color: C.secondary,
+                fontWeight: environment ? '500' : '400',
+                color: environment ? C.text : C.secondary,
                 whiteSpace: 'nowrap',
               }}
             >
-              {environment.name}
+              {environment ? environment.name : 'No Environment'}
             </text>
-          </div>
-        )}
+            <Icon name="chevronDown" size={10} color={C.tertiary} />
+          </Button>
+
+          {envMenuOpen && (
+            <div
+              testId="env-dropdown-menu"
+              style={{
+                position: 'absolute',
+                top: 30,
+                right: 0,
+                width: 190,
+                backgroundColor: C.card,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: C.borderStrong,
+                padding: 4,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
+              }}
+            >
+              {/* Option: No Environment */}
+              <Button
+                testId="env-option-none"
+                onClick={() => {
+                  onSelectEnvironment?.(null)
+                  setEnvMenuOpen(false)
+                }}
+                style={{
+                  height: 28,
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  paddingLeft: 8,
+                  paddingRight: 8,
+                  borderRadius: 4,
+                  cursor: 'pointer',
+                  backgroundColor: !environment ? C.surfaceHighlight : 'transparent',
+                  hover: { backgroundColor: C.overlay },
+                }}
+              >
+                <text
+                  style={{
+                    fontSize: 11,
+                    fontFamily: FONT_SANS,
+                    color: !environment ? C.accent : C.secondary,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  No Environment
+                </text>
+                {!environment && <Icon name="check" size={11} color={C.accent} />}
+              </Button>
+
+              {environments.map((env) => {
+                const isActive = environment?.id === env.id
+                return (
+                  <Button
+                    key={env.id}
+                    testId={`env-option-${env.id}`}
+                    onClick={() => {
+                      onSelectEnvironment?.(env)
+                      setEnvMenuOpen(false)
+                    }}
+                    style={{
+                      height: 28,
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      paddingLeft: 8,
+                      paddingRight: 8,
+                      borderRadius: 4,
+                      cursor: 'pointer',
+                      backgroundColor: isActive ? C.surfaceHighlight : 'transparent',
+                      hover: { backgroundColor: C.overlay },
+                    }}
+                  >
+                    <text
+                      style={{
+                        fontSize: 11,
+                        fontFamily: FONT_SANS,
+                        color: isActive ? C.accent : C.text,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {env.name}
+                    </text>
+                    {isActive && <Icon name="check" size={11} color={C.accent} />}
+                  </Button>
+                )
+              })}
+
+              <div style={{ height: 1, backgroundColor: C.border, marginTop: 4, marginBottom: 4 }} />
+
+              <Button
+                testId="manage-environments-btn"
+                onClick={() => {
+                  setEnvMenuOpen(false)
+                  onOpenEnvironmentManager?.()
+                }}
+                style={{
+                  height: 28,
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  paddingLeft: 8,
+                  paddingRight: 8,
+                  borderRadius: 4,
+                  cursor: 'pointer',
+                  hover: { backgroundColor: C.overlay },
+                }}
+              >
+                <Icon name="settings" size={11} color={C.secondary} />
+                <text style={{ fontSize: 11, fontFamily: FONT_SANS, color: C.secondary, whiteSpace: 'nowrap' }}>
+                  Manage Environments...
+                </text>
+              </Button>
+            </div>
+          )}
+        </div>
 
         <IconButton
           icon="settings"
