@@ -6,6 +6,7 @@ import {
 } from '@gpuix/react'
 import { Titlebar } from './src/components/Titlebar'
 import { Settings } from './src/components/Settings'
+import { RequestBuilder } from './src/components/RequestBuilder'
 import { TooltipProvider } from './src/components/tooltip-layer'
 import { C, FONT_MONO, FONT_SANS } from './src/theme'
 import type {
@@ -90,6 +91,38 @@ export function NoddApp() {
     }
   }, [currentRequest, activeEnvironment, settings, isLoading])
 
+  const saveCurrentRequest = useCallback(() => {
+    const cols = [...collections]
+    if (cols.length === 0) return
+
+    // Find and update or add to first collection
+    let updated = false
+    for (const c of cols) {
+      const reqIdx = c.requests.findIndex((r) => r.id === currentRequest.id)
+      if (reqIdx !== -1) {
+        c.requests[reqIdx] = { ...currentRequest }
+        updated = true
+        break
+      }
+      for (const f of c.folders) {
+        const folderReqIdx = f.requests.findIndex((r) => r.id === currentRequest.id)
+        if (folderReqIdx !== -1) {
+          f.requests[folderReqIdx] = { ...currentRequest }
+          updated = true
+          break
+        }
+      }
+      if (updated) break
+    }
+
+    if (!updated) {
+      cols[0].requests.unshift({ ...currentRequest })
+    }
+
+    setCollections(cols)
+    saveCollections(cols)
+  }, [collections, currentRequest])
+
   return (
     <TooltipProvider>
       <div
@@ -130,26 +163,23 @@ export function NoddApp() {
               onOpenSettings={() => setSettingsOpen(true)}
             />
 
-            {/* Workbench Body */}
+            {/* Main Workbench Body */}
             <div
               style={{
                 display: 'flex',
+                flexDirection: 'column',
                 flexGrow: 1,
                 width: '100%',
-                alignItems: 'center',
-                justifyContent: 'center',
+                overflow: 'hidden',
               }}
             >
-              <text
-                style={{
-                  fontSize: 13,
-                  fontFamily: FONT_SANS,
-                  color: C.tertiary,
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                Send a request to see the response
-              </text>
+              <RequestBuilder
+                request={currentRequest}
+                onChange={setCurrentRequest}
+                onSend={sendRequest}
+                onSave={saveCurrentRequest}
+                isLoading={isLoading}
+              />
             </div>
           </div>
         )}
