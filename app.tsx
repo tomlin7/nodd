@@ -12,6 +12,7 @@ import { Sidebar } from './src/components/Sidebar'
 import { RequestBuilder } from './src/components/RequestBuilder'
 import { ResponseViewer } from './src/components/ResponseViewer'
 import { EnvironmentManager } from './src/components/EnvironmentManager'
+import { StatusBar } from './src/components/StatusBar'
 import { TooltipProvider } from './src/components/tooltip-layer'
 import { C, FONT_MONO, FONT_SANS, ResizeHandle } from './src/theme'
 import type {
@@ -132,7 +133,7 @@ export function NoddApp() {
     saveCollections(cols)
   }, [collections, currentRequest])
 
-  const handleCreateRequest = (collectionId?: string) => {
+  const handleCreateRequest = useCallback((collectionId?: string) => {
     const newReq = createInitialRequest(collectionId)
     const cols = [...collections]
     if (cols.length > 0) {
@@ -142,7 +143,7 @@ export function NoddApp() {
     }
     setCurrentRequest(newReq)
     setResponse(null)
-  }
+  }, [collections])
 
   const handleCreateCollection = () => {
     const newCol: Collection = {
@@ -174,6 +175,57 @@ export function NoddApp() {
     clearHistory()
     setHistory([])
   }
+
+  // Global Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: any) => {
+      const isCtrl = e.ctrlKey || e.metaKey
+      const key = e.key?.toLowerCase()
+
+      // Send request: Ctrl+Enter / Cmd+Enter
+      if (isCtrl && e.key === 'Enter') {
+        e.preventDefault?.()
+        sendRequest()
+        return
+      }
+
+      // Save request: Ctrl+S / Cmd+S
+      if (isCtrl && key === 's') {
+        e.preventDefault?.()
+        saveCurrentRequest()
+        return
+      }
+
+      // New request: Ctrl+N / Cmd+N
+      if (isCtrl && key === 'n') {
+        e.preventDefault?.()
+        handleCreateRequest()
+        return
+      }
+
+      // Toggle sidebar: Ctrl+B / Cmd+B
+      if (isCtrl && key === 'b') {
+        e.preventDefault?.()
+        setSidebarOpen((prev) => !prev)
+        return
+      }
+
+      // Escape: Close modals / views
+      if (e.key === 'Escape') {
+        if (settingsOpen) {
+          setSettingsOpen(false)
+        } else if (envManagerOpen) {
+          setEnvManagerOpen(false)
+        }
+        return
+      }
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('keydown', handleKeyDown)
+      return () => window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [sendRequest, saveCurrentRequest, handleCreateRequest, settingsOpen, envManagerOpen])
 
   return (
     <TooltipProvider>
@@ -309,6 +361,14 @@ export function NoddApp() {
                 />
               </div>
             </div>
+
+            {/* Bottom Status Bar */}
+            <StatusBar
+              activeEnvironment={activeEnvironment}
+              response={response}
+              isLoading={isLoading}
+              onOpenEnvironmentManager={() => setEnvManagerOpen(true)}
+            />
           </div>
         )}
 
