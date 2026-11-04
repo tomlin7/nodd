@@ -11,6 +11,7 @@ import { Settings } from './src/components/Settings'
 import { Sidebar } from './src/components/Sidebar'
 import { RequestBuilder } from './src/components/RequestBuilder'
 import { ResponseViewer } from './src/components/ResponseViewer'
+import { EnvironmentManager } from './src/components/EnvironmentManager'
 import { TooltipProvider } from './src/components/tooltip-layer'
 import { C, FONT_MONO, FONT_SANS, ResizeHandle } from './src/theme'
 import type {
@@ -49,6 +50,7 @@ export function NoddApp() {
 
   const [settings, setSettings] = useState<ClientSettings>(loadSettings)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [envManagerOpen, setEnvManagerOpen] = useState(false)
 
   // Resizable Sidebar State
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -195,6 +197,17 @@ export function NoddApp() {
             }}
             onClose={() => setSettingsOpen(false)}
           />
+        ) : envManagerOpen ? (
+          <EnvironmentManager
+            environments={environments}
+            activeEnvironment={activeEnvironment}
+            onSelectEnvironment={(env) => setActiveEnvironment(env)}
+            onSaveEnvironments={(next) => {
+              setEnvironments(next)
+              saveEnvironments(next)
+            }}
+            onClose={() => setEnvManagerOpen(false)}
+          />
         ) : (
           <div
             style={{
@@ -209,10 +222,13 @@ export function NoddApp() {
               requestName={currentRequest.name}
               method={currentRequest.method}
               environment={activeEnvironment}
+              environments={environments}
               sidebarOpen={sidebarOpen}
               onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
               settingsOpen={settingsOpen}
               onOpenSettings={() => setSettingsOpen(true)}
+              onSelectEnvironment={(env) => setActiveEnvironment(env)}
+              onOpenEnvironmentManager={() => setEnvManagerOpen(true)}
             />
 
             {/* Split Body: Sidebar + Main Workbench */}
