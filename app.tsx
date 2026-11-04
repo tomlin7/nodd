@@ -1,15 +1,18 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
+  AnimatePresence,
   applyMacCpuThrottleFromEnv,
+  motion,
   render,
   useGpuix,
 } from '@gpuix/react'
 import { Titlebar } from './src/components/Titlebar'
 import { Settings } from './src/components/Settings'
+import { Sidebar } from './src/components/Sidebar'
 import { RequestBuilder } from './src/components/RequestBuilder'
 import { ResponseViewer } from './src/components/ResponseViewer'
 import { TooltipProvider } from './src/components/tooltip-layer'
-import { C, FONT_MONO, FONT_SANS } from './src/theme'
+import { C, FONT_MONO, FONT_SANS, ResizeHandle } from './src/theme'
 import type {
   ClientSettings,
   Collection,
@@ -20,25 +23,24 @@ import type {
 } from './src/core/types'
 import { loadCollections, saveCollections } from './src/core/collections'
 import { loadEnvironments, saveEnvironments } from './src/core/environments'
-import { loadHistory, saveHistoryEntry } from './src/core/history'
+import { clearHistory, loadHistory, saveHistoryEntry } from './src/core/history'
 import { loadSettings, saveSettings } from './src/core/preferences'
 import { executeRequest } from './src/core/client'
 import { createId } from './src/core/url'
 
-export function createInitialRequest(): HttpRequest {
+export function createInitialRequest(collectionId?: string): HttpRequest {
   return {
     id: createId('req'),
-    name: 'Get All Users',
+    name: 'New Request',
     method: 'GET',
-    url: 'https://jsonplaceholder.typicode.com/users',
-    params: [
-      { id: createId('param'), key: '_limit', value: '5', enabled: true },
-    ],
+    url: 'https://jsonplaceholder.typicode.com/posts',
+    params: [],
     headers: [
       { id: createId('header'), key: 'Accept', value: 'application/json', enabled: true },
     ],
     body: { type: 'none' },
     auth: { type: 'none' },
+    collectionId,
   }
 }
 
@@ -47,7 +49,12 @@ export function NoddApp() {
 
   const [settings, setSettings] = useState<ClientSettings>(loadSettings)
   const [settingsOpen, setSettingsOpen] = useState(false)
+
+  // Resizable Sidebar State
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarWidth, setSidebarWidth] = useState(260)
+  const [resizing, setResizing] = useState<string | null>(null)
+  const resizeOrigin = useRef({ startX: 0, startWidth: 260 })
 
   const [environments, setEnvironments] = useState<Environment[]>(loadEnvironments)
   const [activeEnvironment, setActiveEnvironment] = useState<Environment | null>(() => {
@@ -123,6 +130,49 @@ export function NoddApp() {
     saveCollections(cols)
   }, [collections, currentRequest])
 
+  const handleCreateRequest = (collectionId?: string) => {
+    const newReq = createInitialRequest(collectionId)
+    const cols = [...collections]
+    if (cols.length > 0) {
+      cols[0].requests.push(newReq)
+      setCollections(cols)
+      saveCollections(cols)
+    }
+    setCurrentRequest(newReq)
+    setResponse(null)
+  }
+
+  const handleCreateCollection = () => {
+    const newCol: Collection = {
+      id: createId('col'),
+      name: `New Collection ${collections.length + 1}`,
+      createdAt: Date.now(),
+      folders: [],
+      requests: [createInitialRequest()],
+    }
+    const updated = [...collections, newCol]
+    setCollections(updated)
+    saveCollections(updated)
+  }
+
+  const handleDeleteRequest = (requestId: string) => {
+    const cols = collections.map((col) => ({
+      ...col,
+      requests: col.requests.filter((r) => r.id !== requestId),
+      folders: col.folders.map((f) => ({
+        ...f,
+        requests: f.requests.filter((r) => r.id !== requestId),
+      })),
+    }))
+    setCollections(cols)
+    saveCollections(cols)
+  }
+
+  const handleClearHistory = () => {
+    clearHistory()
+    setHistory([])
+  }
+
   return (
     <TooltipProvider>
       <div
@@ -133,6 +183,7 @@ export function NoddApp() {
           height: '100%',
           backgroundColor: C.canvas,
           overflow: 'hidden',
+          position: 'relative',
         }}
       >
         {settingsOpen ? (
@@ -151,6 +202,7 @@ export function NoddApp() {
               flexDirection: 'column',
               width: '100%',
               height: '100%',
+              overflow: 'hidden',
             }}
           >
             <Titlebar
@@ -163,30 +215,108 @@ export function NoddApp() {
               onOpenSettings={() => setSettingsOpen(true)}
             />
 
-            {/* Main Workbench Body */}
+            {/* Split Body: Sidebar + Main Workbench */}
             <div
               style={{
                 display: 'flex',
-                flexDirection: 'column',
+                flexDirection: 'row',
                 flexGrow: 1,
                 width: '100%',
                 overflow: 'hidden',
+                position: 'relative',
               }}
             >
-              <RequestBuilder
-                request={currentRequest}
-                onChange={setCurrentRequest}
-                onSend={sendRequest}
-                onSave={saveCurrentRequest}
-                isLoading={isLoading}
-              />
+              {/* Sliding Sidebar Drawer */}
+              <motion.div
+                initial={false}
+                animate={{ width: sidebarOpen ? sidebarWidth : 0 }}
+                transition={{ duration: resizing === 'left' ? 0 : 0.2, ease: 'easeOut' }}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  height: '100%',
+                  flexShrink: 0,
+                  overflow: 'hidden',
+                  position: 'relative',
+                }}
+              >
+                <div style={{ width: sidebarWidth, height: '100%', display: 'flex', flexShrink: 0 }}>
+                  <Sidebar
+                    collections={collections}
+                    history={history}
+                    activeRequestId={currentRequest.id}
+                    onSelectRequest={(req) => {
+                      setCurrentRequest(req)
+                      setResponse(null)
+                    }}
+                    onCreateRequest={handleCreateRequest}
+                    onCreateCollection={handleCreateCollection}
+                    onDeleteRequest={handleDeleteRequest}
+                    onClearHistory={handleClearHistory}
+                  />
+                </div>
+                <ResizeHandle
+                  testId="resize-handle-left"
+                  side="left"
+                  isResizing={resizing === 'left'}
+                  onMouseDown={(e: any) => {
+                    if (e.button === 0) {
+                      resizeOrigin.current = { startX: e.x ?? 0, startWidth: sidebarWidth }
+                      setResizing('left')
+                    }
+                  }}
+                />
+              </motion.div>
 
-              <ResponseViewer
-                response={response}
-                isLoading={isLoading}
-              />
+              {/* Main Workbench Body */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  flexGrow: 1,
+                  minWidth: 0,
+                  height: '100%',
+                  overflow: 'hidden',
+                }}
+              >
+                <RequestBuilder
+                  request={currentRequest}
+                  onChange={setCurrentRequest}
+                  onSend={sendRequest}
+                  onSave={saveCurrentRequest}
+                  isLoading={isLoading}
+                />
+
+                <ResponseViewer
+                  response={response}
+                  isLoading={isLoading}
+                />
+              </div>
             </div>
           </div>
+        )}
+
+        {/* Global Resizing Overlay */}
+        {resizing !== null && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              cursor: 'col-resize',
+              backgroundColor: '#00000001',
+            }}
+            onMouseMove={(e: any) => {
+              const currentX = e.x ?? 0
+              if (resizing === 'left') {
+                const newWidth = Math.max(180, Math.min(480, currentX))
+                setSidebarWidth(newWidth)
+              }
+            }}
+            onMouseUp={() => setResizing(null)}
+          />
         )}
       </div>
     </TooltipProvider>
