@@ -10,11 +10,6 @@ import {
   IS_DARWIN,
   TITLEBAR_HEIGHT,
 } from '../theme'
-import {
-  endWindowDrag,
-  handleTitlebarMouseDown,
-  updateWindowDrag,
-} from '../window-drag'
 import type { ClientSettings } from '../core/types'
 
 export function Settings({
@@ -51,7 +46,7 @@ export function Settings({
           width: 240,
           backgroundColor: C.sidebar,
           borderRightWidth: 1,
-          borderColor: C.border,
+          borderColor: C.sidebarBorder,
           display: 'flex',
           flexDirection: 'column',
           paddingTop: IS_DARWIN ? 36 : 12,
@@ -64,13 +59,13 @@ export function Settings({
           testId="settings-back"
           onClick={onClose}
           style={{
-            height: 32,
+            height: 34,
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
             gap: 8,
-            paddingLeft: 8,
-            paddingRight: 8,
+            paddingLeft: 10,
+            paddingRight: 10,
             borderRadius: 7,
             cursor: 'pointer',
             hover: { backgroundColor: C.overlay },
@@ -163,8 +158,6 @@ export function Settings({
             flexDirection: 'row',
             alignItems: 'center',
             height: TITLEBAR_HEIGHT,
-            borderBottomWidth: 1,
-            borderColor: C.border,
             paddingLeft: 24,
             paddingRight: 14,
             backgroundColor: C.header,
@@ -222,10 +215,8 @@ export function Settings({
               <div
                 style={{
                   backgroundColor: C.card,
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  borderColor: C.cardBorder,
-                  padding: 18,
+                  borderRadius: 10,
+                  padding: 20,
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 16,
@@ -243,7 +234,7 @@ export function Settings({
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <text
                       style={{
-                        fontSize: 13,
+                        fontSize: 13.5,
                         fontWeight: '600',
                         fontFamily: FONT_SANS,
                         color: C.text,
@@ -254,7 +245,7 @@ export function Settings({
                     </text>
                     <text
                       style={{
-                        fontSize: 12,
+                        fontSize: 12.5,
                         fontFamily: FONT_SANS,
                         color: C.secondary,
                         whiteSpace: 'nowrap',
@@ -269,7 +260,7 @@ export function Settings({
                       update({ timeoutMs: next })
                     }}
                     style={{
-                      height: 28,
+                      height: 30,
                       paddingLeft: 12,
                       paddingRight: 12,
                       borderRadius: 6,
@@ -282,7 +273,7 @@ export function Settings({
                   >
                     <text
                       style={{
-                        fontSize: 12,
+                        fontSize: 12.5,
                         fontFamily: FONT_MONO,
                         color: C.text,
                         whiteSpace: 'nowrap',
@@ -293,7 +284,7 @@ export function Settings({
                   </Button>
                 </div>
 
-                <div style={{ height: 1, backgroundColor: C.border }} />
+                <div style={{ height: 1, backgroundColor: '#25252A' }} />
 
                 {/* Row: Follow Redirects */}
                 <div
@@ -307,7 +298,7 @@ export function Settings({
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <text
                       style={{
-                        fontSize: 13,
+                        fontSize: 13.5,
                         fontWeight: '600',
                         fontFamily: FONT_SANS,
                         color: C.text,
@@ -318,7 +309,7 @@ export function Settings({
                     </text>
                     <text
                       style={{
-                        fontSize: 12,
+                        fontSize: 12.5,
                         fontFamily: FONT_SANS,
                         color: C.secondary,
                         whiteSpace: 'nowrap',
@@ -330,7 +321,7 @@ export function Settings({
                   <Button
                     onClick={() => update({ followRedirects: !current.followRedirects })}
                     style={{
-                      height: 28,
+                      height: 30,
                       paddingLeft: 12,
                       paddingRight: 12,
                       borderRadius: 6,
@@ -342,7 +333,7 @@ export function Settings({
                   >
                     <text
                       style={{
-                        fontSize: 12,
+                        fontSize: 12.5,
                         fontFamily: FONT_SANS,
                         color: current.followRedirects ? C.success : C.tertiary,
                         whiteSpace: 'nowrap',
@@ -353,7 +344,7 @@ export function Settings({
                   </Button>
                 </div>
 
-                <div style={{ height: 1, backgroundColor: C.border }} />
+                <div style={{ height: 1, backgroundColor: '#25252A' }} />
 
                 {/* Row: Validate SSL */}
                 <div
@@ -367,7 +358,7 @@ export function Settings({
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <text
                       style={{
-                        fontSize: 13,
+                        fontSize: 13.5,
                         fontWeight: '600',
                         fontFamily: FONT_SANS,
                         color: C.text,
@@ -378,19 +369,19 @@ export function Settings({
                     </text>
                     <text
                       style={{
-                        fontSize: 12,
+                        fontSize: 12.5,
                         fontFamily: FONT_SANS,
                         color: C.secondary,
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      Reject self-signed or invalid SSL certificates
+                      Reject connections to hosts with untrusted or self-signed certificates
                     </text>
                   </div>
                   <Button
                     onClick={() => update({ validateSsl: !current.validateSsl })}
                     style={{
-                      height: 28,
+                      height: 30,
                       paddingLeft: 12,
                       paddingRight: 12,
                       borderRadius: 6,
@@ -402,13 +393,13 @@ export function Settings({
                   >
                     <text
                       style={{
-                        fontSize: 12,
+                        fontSize: 12.5,
                         fontFamily: FONT_SANS,
-                        color: current.validateSsl ? C.success : C.warning,
+                        color: current.validateSsl ? C.success : C.tertiary,
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      {current.validateSsl ? 'Strict' : 'Allow Untrusted'}
+                      {current.validateSsl ? 'Enabled' : 'Disabled'}
                     </text>
                   </Button>
                 </div>
@@ -429,30 +420,39 @@ export function Settings({
               >
                 About Nodd
               </text>
-
               <div
                 style={{
                   backgroundColor: C.card,
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  borderColor: C.cardBorder,
-                  padding: 18,
+                  borderRadius: 10,
+                  padding: 20,
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 12,
                 }}
               >
-                <text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: '600',
-                    fontFamily: FONT_SANS,
-                    color: C.text,
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  Nodd · Minimalist API Workbench
-                </text>
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: '700',
+                      fontFamily: FONT_SANS,
+                      color: C.text,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Nodd
+                  </text>
+                  <text
+                    style={{
+                      fontSize: 12.5,
+                      fontFamily: FONT_MONO,
+                      color: C.tertiary,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    v1.0.0
+                  </text>
+                </div>
                 <text
                   style={{
                     fontSize: 13,
@@ -461,17 +461,7 @@ export function Settings({
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  Version 0.1.0 · Fast, GPU-accelerated HTTP client built with GPUIX
-                </text>
-                <text
-                  style={{
-                    fontSize: 12,
-                    fontFamily: FONT_SANS,
-                    color: C.tertiary,
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  Designed with calm dark graphite aesthetics and zero UI bloat.
+                  Minimalist API Workbench built with GPUIX.
                 </text>
               </div>
             </div>

@@ -82,7 +82,7 @@ export function ResponseViewer({
       >
         <text
           style={{
-            fontSize: 13,
+            fontSize: 13.5,
             fontFamily: FONT_SANS,
             color: C.tertiary,
             whiteSpace: 'nowrap',
@@ -107,20 +107,20 @@ export function ResponseViewer({
       >
         <text
           style={{
-            fontSize: 13,
+            fontSize: 13.5,
             fontFamily: FONT_SANS,
             color: C.tertiary,
             whiteSpace: 'nowrap',
           }}
         >
-          Send a request to see the response
+          Send a request to inspect response
         </text>
       </div>
     )
   }
 
   const statusColor = getStatusColor(response.status)
-  const headerKeys = Object.keys(response.headers)
+  const headerEntries = Object.entries(response.headers)
 
   return (
     <div
@@ -131,8 +131,6 @@ export function ResponseViewer({
         width: '100%',
         height: '100%',
         backgroundColor: C.canvas,
-        borderTopWidth: 1,
-        borderColor: C.border,
         overflow: 'hidden',
       }}
     >
@@ -143,12 +141,10 @@ export function ResponseViewer({
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          height: 42,
+          height: 44,
           paddingLeft: 20,
           paddingRight: 20,
           backgroundColor: C.surface,
-          borderBottomWidth: 1,
-          borderColor: C.border,
           flexShrink: 0,
         }}
       >
@@ -162,14 +158,11 @@ export function ResponseViewer({
               flexDirection: 'row',
               alignItems: 'center',
               gap: 6,
-              paddingLeft: 8,
-              paddingRight: 8,
-              paddingTop: 3,
-              paddingBottom: 3,
+              paddingLeft: 10,
+              paddingRight: 10,
+              height: 28,
               borderRadius: 6,
               backgroundColor: C.surfaceHighlight,
-              borderWidth: 1,
-              borderColor: C.border,
             }}
           >
             <div
@@ -182,7 +175,7 @@ export function ResponseViewer({
             />
             <text
               style={{
-                fontSize: 12,
+                fontSize: 13,
                 fontFamily: FONT_MONO,
                 fontWeight: '700',
                 color: statusColor,
@@ -201,15 +194,16 @@ export function ResponseViewer({
             style={{
               paddingLeft: 8,
               paddingRight: 8,
-              paddingTop: 3,
-              paddingBottom: 3,
+              height: 28,
               borderRadius: 6,
               backgroundColor: C.surfaceHighlight,
+              display: 'flex',
+              alignItems: 'center',
             }}
           >
             <text
               style={{
-                fontSize: 11,
+                fontSize: 12.5,
                 fontFamily: FONT_MONO,
                 color: C.secondary,
                 whiteSpace: 'nowrap',
@@ -225,15 +219,16 @@ export function ResponseViewer({
             style={{
               paddingLeft: 8,
               paddingRight: 8,
-              paddingTop: 3,
-              paddingBottom: 3,
+              height: 28,
               borderRadius: 6,
               backgroundColor: C.surfaceHighlight,
+              display: 'flex',
+              alignItems: 'center',
             }}
           >
             <text
               style={{
-                fontSize: 11,
+                fontSize: 12.5,
                 fontFamily: FONT_MONO,
                 color: C.secondary,
                 whiteSpace: 'nowrap',
@@ -261,9 +256,9 @@ export function ResponseViewer({
                 testId="view-mode-pretty"
                 onClick={() => setViewMode('pretty')}
                 style={{
-                  height: 22,
-                  paddingLeft: 8,
-                  paddingRight: 8,
+                  height: 24,
+                  paddingLeft: 10,
+                  paddingRight: 10,
                   borderRadius: 4,
                   backgroundColor: viewMode === 'pretty' ? C.surface : 'transparent',
                   cursor: 'pointer',
@@ -273,8 +268,9 @@ export function ResponseViewer({
               >
                 <text
                   style={{
-                    fontSize: 11,
+                    fontSize: 12,
                     fontFamily: FONT_SANS,
+                    fontWeight: viewMode === 'pretty' ? '600' : '400',
                     color: viewMode === 'pretty' ? C.text : C.tertiary,
                     whiteSpace: 'nowrap',
                   }}
@@ -286,9 +282,9 @@ export function ResponseViewer({
                 testId="view-mode-raw"
                 onClick={() => setViewMode('raw')}
                 style={{
-                  height: 22,
-                  paddingLeft: 8,
-                  paddingRight: 8,
+                  height: 24,
+                  paddingLeft: 10,
+                  paddingRight: 10,
                   borderRadius: 4,
                   backgroundColor: viewMode === 'raw' ? C.surface : 'transparent',
                   cursor: 'pointer',
@@ -298,8 +294,9 @@ export function ResponseViewer({
               >
                 <text
                   style={{
-                    fontSize: 11,
+                    fontSize: 12,
                     fontFamily: FONT_SANS,
+                    fontWeight: viewMode === 'raw' ? '600' : '400',
                     color: viewMode === 'raw' ? C.text : C.tertiary,
                     whiteSpace: 'nowrap',
                   }}
@@ -316,9 +313,9 @@ export function ResponseViewer({
               testId="response-tab-body"
               onClick={() => setActiveTab('body')}
               style={{
-                height: 26,
-                paddingLeft: 10,
-                paddingRight: 10,
+                height: 28,
+                paddingLeft: 12,
+                paddingRight: 12,
                 borderRadius: 6,
                 backgroundColor: activeTab === 'body' ? C.surfaceHighlight : 'transparent',
                 display: 'flex',
@@ -328,9 +325,9 @@ export function ResponseViewer({
             >
               <text
                 style={{
-                  fontSize: 12,
+                  fontSize: 13,
                   fontFamily: FONT_SANS,
-                  fontWeight: activeTab === 'body' ? '600' : '400',
+                  fontWeight: activeTab === 'body' ? '600' : '500',
                   color: activeTab === 'body' ? C.text : C.secondary,
                   whiteSpace: 'nowrap',
                 }}
@@ -342,9 +339,9 @@ export function ResponseViewer({
               testId="response-tab-headers"
               onClick={() => setActiveTab('headers')}
               style={{
-                height: 26,
-                paddingLeft: 10,
-                paddingRight: 10,
+                height: 28,
+                paddingLeft: 12,
+                paddingRight: 12,
                 borderRadius: 6,
                 backgroundColor: activeTab === 'headers' ? C.surfaceHighlight : 'transparent',
                 display: 'flex',
@@ -354,14 +351,14 @@ export function ResponseViewer({
             >
               <text
                 style={{
-                  fontSize: 12,
+                  fontSize: 13,
                   fontFamily: FONT_SANS,
-                  fontWeight: activeTab === 'headers' ? '600' : '400',
+                  fontWeight: activeTab === 'headers' ? '600' : '500',
                   color: activeTab === 'headers' ? C.text : C.secondary,
                   whiteSpace: 'nowrap',
                 }}
               >
-                {`Headers (${headerKeys.length})`}
+                {`Headers (${headerEntries.length})`}
               </text>
             </Button>
           </div>
@@ -371,21 +368,21 @@ export function ResponseViewer({
             testId="copy-response-button"
             onClick={copyToClipboard}
             style={{
-              height: 26,
-              paddingLeft: 8,
-              paddingRight: 8,
+              height: 28,
+              paddingLeft: 10,
+              paddingRight: 10,
               borderRadius: 6,
               backgroundColor: C.surfaceHighlight,
               display: 'flex',
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 4,
+              gap: 5,
               cursor: 'pointer',
               hover: { backgroundColor: C.borderStrong },
             }}
           >
             <Icon name={copied ? 'check' : 'copy'} size={12} color={copied ? C.success : C.secondary} />
-            <text style={{ fontSize: 11, fontFamily: FONT_SANS, color: copied ? C.success : C.secondary, whiteSpace: 'nowrap' }}>
+            <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: copied ? C.success : C.secondary, whiteSpace: 'nowrap' }}>
               {copied ? 'Copied' : 'Copy'}
             </text>
           </Button>
@@ -398,19 +395,17 @@ export function ResponseViewer({
           style={{
             paddingLeft: 20,
             paddingRight: 20,
-            paddingTop: 10,
-            paddingBottom: 10,
-            backgroundColor: '#2A181A',
-            borderBottomWidth: 1,
-            borderColor: '#4A2428',
+            paddingTop: 12,
+            paddingBottom: 12,
+            backgroundColor: '#251517',
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
             gap: 8,
           }}
         >
-          <Icon name="close" size={13} color={C.error} />
-          <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.error, whiteSpace: 'nowrap' }}>
+          <Icon name="close" size={14} color={C.error} />
+          <text style={{ fontSize: 13, fontFamily: FONT_SANS, color: C.error, whiteSpace: 'nowrap' }}>
             {response.error}
           </text>
         </div>
@@ -432,10 +427,8 @@ export function ResponseViewer({
               display: 'flex',
               flexDirection: 'column',
               flexGrow: 1,
-              borderRadius: 8,
-              backgroundColor: C.surface,
-              borderWidth: 1,
-              borderColor: C.border,
+              borderRadius: 10,
+              backgroundColor: C.card,
               overflow: 'hidden',
             }}
           >
@@ -446,14 +439,13 @@ export function ResponseViewer({
                 flexDirection: 'row',
                 alignItems: 'center',
                 gap: 8,
-                paddingLeft: 12,
-                paddingRight: 12,
-                height: 32,
-                borderBottomWidth: 1,
-                borderColor: C.border,
+                paddingLeft: 14,
+                paddingRight: 14,
+                height: 36,
+                backgroundColor: '#1E1E23',
               }}
             >
-              <Icon name="search" size={12} color={C.tertiary} />
+              <Icon name="search" size={13} color={C.tertiary} />
               <input
                 testId="response-filter-input"
                 value={filterQuery}
@@ -461,7 +453,7 @@ export function ResponseViewer({
                 theme={{ text: C.text, textMuted: C.secondary, textFaint: C.tertiary }}
                 style={{
                   width: '100%',
-                  fontSize: 12,
+                  fontSize: 13,
                   fontFamily: FONT_MONO,
                   color: C.text,
                   backgroundColor: 'transparent',
@@ -472,7 +464,7 @@ export function ResponseViewer({
               />
               {filterQuery && (
                 <Button onClick={() => setFilterQuery('')} style={{ cursor: 'pointer' }}>
-                  <Icon name="close" size={11} color={C.tertiary} />
+                  <Icon name="close" size={12} color={C.tertiary} />
                 </Button>
               )}
             </div>
@@ -485,15 +477,14 @@ export function ResponseViewer({
                 flexGrow: 1,
                 padding: 12,
                 overflow: 'hidden',
-                gap: 2,
               }}
             >
               {lines.length === 0 ? (
-                <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
-                  {filterQuery ? 'No lines matched filter' : 'Empty response body'}
+                <text style={{ fontSize: 13, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
+                  Empty response body
                 </text>
               ) : (
-                lines.slice(0, 100).map((line, idx) => (
+                lines.map((line, idx) => (
                   <div
                     key={idx}
                     style={{
@@ -501,12 +492,13 @@ export function ResponseViewer({
                       flexDirection: 'row',
                       alignItems: 'flex-start',
                       gap: 12,
+                      lineHeight: 20,
                     }}
                   >
-                    <div style={{ width: 36, textAlign: 'right', flexShrink: 0 }}>
+                    <div style={{ width: 36, flexShrink: 0, textAlign: 'right' }}>
                       <text
                         style={{
-                          fontSize: 11,
+                          fontSize: 12,
                           fontFamily: FONT_MONO,
                           color: C.ghost,
                           whiteSpace: 'nowrap',
@@ -518,10 +510,9 @@ export function ResponseViewer({
                     <div style={{ flexGrow: 1, minWidth: 0 }}>
                       <text
                         style={{
-                          fontSize: 12,
-                          lineHeight: 18,
+                          fontSize: 13,
                           fontFamily: FONT_MONO,
-                          color: C.text,
+                          color: line.includes(':') && line.includes('"') ? C.accent : C.text,
                           whiteSpace: 'nowrap',
                         }}
                       >
@@ -530,13 +521,6 @@ export function ResponseViewer({
                     </div>
                   </div>
                 ))
-              )}
-              {lines.length > 100 && (
-                <div style={{ paddingLeft: 48, paddingTop: 8 }}>
-                  <text style={{ fontSize: 11, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
-                    {`…and ${lines.length - 100} more lines`}
-                  </text>
-                </div>
               )}
             </div>
           </div>
@@ -548,61 +532,61 @@ export function ResponseViewer({
               display: 'flex',
               flexDirection: 'column',
               flexGrow: 1,
-              borderRadius: 8,
-              backgroundColor: C.surface,
-              borderWidth: 1,
-              borderColor: C.border,
-              padding: 12,
+              borderRadius: 10,
+              backgroundColor: C.card,
+              padding: 14,
+              overflow: 'hidden',
               gap: 8,
             }}
           >
-            {headerKeys.length === 0 ? (
-              <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
-                No response headers returned
-              </text>
-            ) : (
-              headerKeys.map((key) => (
-                <div
-                  key={key}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 12,
-                    paddingTop: 4,
-                    paddingBottom: 4,
-                    borderBottomWidth: 1,
-                    borderColor: C.cardBorder,
-                  }}
-                >
-                  <div style={{ width: 200, flexShrink: 0 }}>
-                    <text
-                      style={{
-                        fontSize: 12,
-                        fontFamily: FONT_MONO,
-                        fontWeight: '600',
-                        color: C.secondary,
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {key}
-                    </text>
-                  </div>
-                  <div style={{ flexGrow: 1, minWidth: 0 }}>
-                    <text
-                      style={{
-                        fontSize: 12,
-                        fontFamily: FONT_MONO,
-                        color: C.text,
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {response.headers[key]}
-                    </text>
-                  </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 12,
+                paddingBottom: 6,
+              }}
+            >
+              <div style={{ width: 220, flexShrink: 0 }}>
+                <text style={{ fontSize: 12, fontFamily: FONT_SANS, fontWeight: '600', color: C.tertiary, whiteSpace: 'nowrap' }}>
+                  HEADER NAME
+                </text>
+              </div>
+              <div style={{ flexGrow: 1, minWidth: 0 }}>
+                <text style={{ fontSize: 12, fontFamily: FONT_SANS, fontWeight: '600', color: C.tertiary, whiteSpace: 'nowrap' }}>
+                  VALUE
+                </text>
+              </div>
+            </div>
+
+            {headerEntries.map(([k, v]) => (
+              <div
+                key={k}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 12,
+                  height: 32,
+                  paddingLeft: 8,
+                  paddingRight: 8,
+                  borderRadius: 5,
+                  backgroundColor: C.surface,
+                }}
+              >
+                <div style={{ width: 220, flexShrink: 0 }}>
+                  <text style={{ fontSize: 12.5, fontFamily: FONT_MONO, color: C.accent, whiteSpace: 'nowrap' }}>
+                    {k}
+                  </text>
                 </div>
-              ))
-            )}
+                <div style={{ flexGrow: 1, minWidth: 0 }}>
+                  <text style={{ fontSize: 12.5, fontFamily: FONT_MONO, color: C.text, whiteSpace: 'nowrap' }}>
+                    {v}
+                  </text>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

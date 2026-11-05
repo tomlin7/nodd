@@ -113,7 +113,7 @@ export function EnvironmentManager({
           width: 240,
           backgroundColor: C.sidebar,
           borderRightWidth: 1,
-          borderColor: C.border,
+          borderColor: C.sidebarBorder,
           display: 'flex',
           flexDirection: 'column',
           paddingTop: 12,
@@ -126,13 +126,13 @@ export function EnvironmentManager({
           testId="env-manager-back"
           onClick={onClose}
           style={{
-            height: 32,
+            height: 34,
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
             gap: 8,
-            paddingLeft: 8,
-            paddingRight: 8,
+            paddingLeft: 10,
+            paddingRight: 10,
             borderRadius: 7,
             cursor: 'pointer',
             hover: { backgroundColor: C.overlay },
@@ -152,16 +152,16 @@ export function EnvironmentManager({
           </text>
         </Button>
 
-        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, paddingLeft: 4 }}>
-          <text style={{ fontSize: 11, fontFamily: FONT_SANS, fontWeight: '600', color: C.tertiary, whiteSpace: 'nowrap' }}>
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, paddingLeft: 6 }}>
+          <text style={{ fontSize: 12, fontFamily: FONT_SANS, fontWeight: '600', color: C.tertiary, whiteSpace: 'nowrap' }}>
             ENVIRONMENTS
           </text>
           <Button
             testId="create-env-button"
             onClick={createEnvironment}
             style={{
-              width: 20,
-              height: 20,
+              width: 22,
+              height: 22,
               borderRadius: 4,
               display: 'flex',
               alignItems: 'center',
@@ -170,7 +170,7 @@ export function EnvironmentManager({
               hover: { backgroundColor: C.overlay },
             }}
           >
-            <Icon name="plus" size={11} color={C.secondary} />
+            <Icon name="plus" size={12} color={C.secondary} />
           </Button>
         </div>
 
@@ -189,19 +189,19 @@ export function EnvironmentManager({
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  paddingLeft: 8,
-                  paddingRight: 8,
+                  paddingLeft: 10,
+                  paddingRight: 10,
                   borderRadius: 6,
                   cursor: 'pointer',
                   backgroundColor: isSelected ? C.surfaceHighlight : 'transparent',
                   hover: { backgroundColor: isSelected ? C.surfaceHighlight : C.overlay },
                 }}
               >
-                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 6, minWidth: 0, flexGrow: 1 }}>
-                  <Icon name="environment" size={12} color={isActive ? C.accent : C.tertiary} />
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, minWidth: 0, flexGrow: 1 }}>
+                  <Icon name="environment" size={13} color={isActive ? C.accent : C.tertiary} />
                   <text
                     style={{
-                      fontSize: 12,
+                      fontSize: 13,
                       fontFamily: FONT_SANS,
                       fontWeight: isSelected ? '600' : '400',
                       color: isSelected ? C.text : C.secondary,
@@ -212,8 +212,8 @@ export function EnvironmentManager({
                   </text>
                 </div>
                 {isActive && (
-                  <div style={{ paddingLeft: 4, paddingRight: 4, borderRadius: 3, backgroundColor: C.surfaceHighlight }}>
-                    <text style={{ fontSize: 9, fontFamily: FONT_SANS, color: C.accent, whiteSpace: 'nowrap' }}>
+                  <div style={{ paddingLeft: 6, paddingRight: 6, paddingTop: 1, paddingBottom: 1, borderRadius: 3, backgroundColor: '#27272D' }}>
+                    <text style={{ fontSize: 11, fontFamily: FONT_SANS, fontWeight: '600', color: C.accent, whiteSpace: 'nowrap' }}>
                       Active
                     </text>
                   </div>
@@ -240,8 +240,6 @@ export function EnvironmentManager({
             flexDirection: 'row',
             alignItems: 'center',
             height: TITLEBAR_HEIGHT,
-            borderBottomWidth: 1,
-            borderColor: C.border,
             paddingLeft: 24,
             paddingRight: 14,
             backgroundColor: C.header,
@@ -300,7 +298,7 @@ export function EnvironmentManager({
                 <text style={{ fontSize: 18, fontWeight: '600', fontFamily: FONT_SANS, color: C.text, whiteSpace: 'nowrap' }}>
                   {selectedEnv.name}
                 </text>
-                <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.secondary, whiteSpace: 'nowrap' }}>
+                <text style={{ fontSize: 13, fontFamily: FONT_SANS, color: C.secondary, whiteSpace: 'nowrap' }}>
                   Reference these variables in requests using {`{{variableName}}`}
                 </text>
               </div>
@@ -310,9 +308,9 @@ export function EnvironmentManager({
                   testId="set-active-env-btn"
                   onClick={() => onSelectEnvironment(selectedEnv)}
                   style={{
-                    height: 30,
-                    paddingLeft: 12,
-                    paddingRight: 12,
+                    height: 32,
+                    paddingLeft: 14,
+                    paddingRight: 14,
                     borderRadius: 6,
                     backgroundColor: activeEnvironment?.id === selectedEnv.id ? C.surfaceHighlight : C.accent,
                     display: 'flex',
@@ -322,7 +320,7 @@ export function EnvironmentManager({
                 >
                   <text
                     style={{
-                      fontSize: 12,
+                      fontSize: 12.5,
                       fontFamily: FONT_SANS,
                       fontWeight: '600',
                       color: activeEnvironment?.id === selectedEnv.id ? C.secondary : '#FFFFFF',
@@ -338,13 +336,11 @@ export function EnvironmentManager({
                     testId="delete-env-btn"
                     onClick={() => deleteEnvironment(selectedEnv.id)}
                     style={{
-                      height: 30,
-                      paddingLeft: 10,
-                      paddingRight: 10,
+                      height: 32,
+                      paddingLeft: 12,
+                      paddingRight: 12,
                       borderRadius: 6,
                       backgroundColor: C.surface,
-                      borderWidth: 1,
-                      borderColor: C.border,
                       display: 'flex',
                       alignItems: 'center',
                       cursor: 'pointer',
@@ -361,9 +357,7 @@ export function EnvironmentManager({
             <div
               style={{
                 backgroundColor: C.card,
-                borderRadius: 12,
-                borderWidth: 1,
-                borderColor: C.cardBorder,
+                borderRadius: 10,
                 padding: 16,
                 display: 'flex',
                 flexDirection: 'column',
@@ -378,17 +372,15 @@ export function EnvironmentManager({
                   alignItems: 'center',
                   gap: 8,
                   paddingBottom: 6,
-                  borderBottomWidth: 1,
-                  borderColor: C.border,
                 }}
               >
                 <div style={{ flexGrow: 1, minWidth: 0 }}>
-                  <text style={{ fontSize: 11, fontFamily: FONT_SANS, fontWeight: '600', color: C.tertiary, whiteSpace: 'nowrap' }}>
+                  <text style={{ fontSize: 12, fontFamily: FONT_SANS, fontWeight: '600', color: C.tertiary, whiteSpace: 'nowrap' }}>
                     VARIABLE
                   </text>
                 </div>
                 <div style={{ flexGrow: 1, minWidth: 0 }}>
-                  <text style={{ fontSize: 11, fontFamily: FONT_SANS, fontWeight: '600', color: C.tertiary, whiteSpace: 'nowrap' }}>
+                  <text style={{ fontSize: 12, fontFamily: FONT_SANS, fontWeight: '600', color: C.tertiary, whiteSpace: 'nowrap' }}>
                     VALUE
                   </text>
                 </div>
@@ -404,13 +396,11 @@ export function EnvironmentManager({
                     flexDirection: 'row',
                     alignItems: 'center',
                     gap: 8,
-                    height: 34,
-                    paddingLeft: 8,
-                    paddingRight: 8,
+                    height: 36,
+                    paddingLeft: 10,
+                    paddingRight: 10,
                     borderRadius: 6,
                     backgroundColor: C.surface,
-                    borderWidth: 1,
-                    borderColor: C.border,
                   }}
                 >
                   <div style={{ flexGrow: 1, minWidth: 0 }}>
@@ -420,7 +410,7 @@ export function EnvironmentManager({
                       theme={{ text: C.text, textMuted: C.secondary, textFaint: C.tertiary }}
                       style={{
                         width: '100%',
-                        fontSize: 12,
+                        fontSize: 13,
                         fontFamily: FONT_MONO,
                         color: C.accent,
                         backgroundColor: 'transparent',
@@ -438,7 +428,7 @@ export function EnvironmentManager({
                       theme={{ text: C.text, textMuted: C.secondary, textFaint: C.tertiary }}
                       style={{
                         width: '100%',
-                        fontSize: 12,
+                        fontSize: 13,
                         fontFamily: FONT_MONO,
                         color: C.text,
                         backgroundColor: 'transparent',
@@ -452,8 +442,8 @@ export function EnvironmentManager({
                   <Button
                     onClick={() => deleteVariable(varKey)}
                     style={{
-                      width: 24,
-                      height: 24,
+                      width: 26,
+                      height: 26,
                       borderRadius: 4,
                       display: 'flex',
                       alignItems: 'center',
@@ -463,7 +453,7 @@ export function EnvironmentManager({
                       flexShrink: 0,
                     }}
                   >
-                    <Icon name="trash" size={12} color={C.tertiary} />
+                    <Icon name="trash" size={13} color={C.tertiary} />
                   </Button>
                 </div>
               ))}
@@ -474,9 +464,9 @@ export function EnvironmentManager({
                   testId="add-variable-btn"
                   onClick={addVariable}
                   style={{
-                    height: 28,
-                    paddingLeft: 10,
-                    paddingRight: 10,
+                    height: 32,
+                    paddingLeft: 12,
+                    paddingRight: 12,
                     borderRadius: 6,
                     display: 'flex',
                     flexDirection: 'row',
@@ -484,13 +474,11 @@ export function EnvironmentManager({
                     gap: 6,
                     cursor: 'pointer',
                     backgroundColor: C.surface,
-                    borderWidth: 1,
-                    borderColor: C.border,
                     hover: { backgroundColor: C.surfaceHighlight },
                   }}
                 >
                   <Icon name="plus" size={12} color={C.secondary} />
-                  <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.secondary, whiteSpace: 'nowrap' }}>
+                  <text style={{ fontSize: 12.5, fontFamily: FONT_SANS, color: C.secondary, whiteSpace: 'nowrap' }}>
                     Add Variable
                   </text>
                 </Button>
@@ -499,7 +487,7 @@ export function EnvironmentManager({
           </div>
         ) : (
           <div style={{ padding: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <text style={{ fontSize: 13, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
+            <text style={{ fontSize: 13.5, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
               No environment selected
             </text>
           </div>

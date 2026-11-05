@@ -1,9 +1,8 @@
 import React, { useMemo, useState } from 'react'
 import { Button } from '@gpuix/react'
 import { Icon } from './Icons'
-import { C, FONT_MONO, FONT_SANS, IconButton } from '../theme'
-import type { Collection, CollectionFolder, HistoryEntry, HttpRequest } from '../core/types'
-import { createId } from '../core/url'
+import { C, FONT_MONO, FONT_SANS } from '../theme'
+import type { Collection, HistoryEntry, HttpRequest } from '../core/types'
 
 export function Sidebar({
   collections,
@@ -42,23 +41,27 @@ export function Sidebar({
     if (!searchQuery.trim()) return collections
     const q = searchQuery.toLowerCase()
 
-    return collections.map((col) => {
-      const directRequests = col.requests.filter(
-        (r) => r.name.toLowerCase().includes(q) || r.url.toLowerCase().includes(q)
-      )
-      const matchedFolders = col.folders.map((f) => ({
-        ...f,
-        requests: f.requests.filter(
+    return collections
+      .map((col) => {
+        const directRequests = col.requests.filter(
           (r) => r.name.toLowerCase().includes(q) || r.url.toLowerCase().includes(q)
-        ),
-      })).filter((f) => f.requests.length > 0 || f.name.toLowerCase().includes(q))
+        )
+        const matchedFolders = col.folders
+          .map((f) => ({
+            ...f,
+            requests: f.requests.filter(
+              (r) => r.name.toLowerCase().includes(q) || r.url.toLowerCase().includes(q)
+            ),
+          }))
+          .filter((f) => f.requests.length > 0 || f.name.toLowerCase().includes(q))
 
-      return {
-        ...col,
-        folders: matchedFolders,
-        requests: directRequests,
-      }
-    }).filter((col) => col.requests.length > 0 || col.folders.length > 0 || col.name.toLowerCase().includes(q))
+        return {
+          ...col,
+          folders: matchedFolders,
+          requests: directRequests,
+        }
+      })
+      .filter((col) => col.requests.length > 0 || col.folders.length > 0 || col.name.toLowerCase().includes(q))
   }, [collections, searchQuery])
 
   // Filtered history
@@ -91,11 +94,9 @@ export function Sidebar({
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          height: 40,
+          height: 42,
           paddingLeft: 12,
           paddingRight: 10,
-          borderBottomWidth: 1,
-          borderColor: C.border,
           flexShrink: 0,
         }}
       >
@@ -104,10 +105,10 @@ export function Sidebar({
             testId="sidebar-tab-collections"
             onClick={() => setActiveTab('collections')}
             style={{
-              height: 26,
-              paddingLeft: 8,
-              paddingRight: 8,
-              borderRadius: 5,
+              height: 28,
+              paddingLeft: 10,
+              paddingRight: 10,
+              borderRadius: 6,
               backgroundColor: activeTab === 'collections' ? C.surfaceHighlight : 'transparent',
               display: 'flex',
               alignItems: 'center',
@@ -116,7 +117,7 @@ export function Sidebar({
           >
             <text
               style={{
-                fontSize: 12,
+                fontSize: 12.5,
                 fontFamily: FONT_SANS,
                 fontWeight: activeTab === 'collections' ? '600' : '400',
                 color: activeTab === 'collections' ? C.text : C.secondary,
@@ -131,10 +132,10 @@ export function Sidebar({
             testId="sidebar-tab-history"
             onClick={() => setActiveTab('history')}
             style={{
-              height: 26,
-              paddingLeft: 8,
-              paddingRight: 8,
-              borderRadius: 5,
+              height: 28,
+              paddingLeft: 10,
+              paddingRight: 10,
+              borderRadius: 6,
               backgroundColor: activeTab === 'history' ? C.surfaceHighlight : 'transparent',
               display: 'flex',
               alignItems: 'center',
@@ -143,7 +144,7 @@ export function Sidebar({
           >
             <text
               style={{
-                fontSize: 12,
+                fontSize: 12.5,
                 fontFamily: FONT_SANS,
                 fontWeight: activeTab === 'history' ? '600' : '400',
                 color: activeTab === 'history' ? C.text : C.secondary,
@@ -160,9 +161,9 @@ export function Sidebar({
             testId="new-collection-btn"
             onClick={onCreateCollection}
             style={{
-              width: 24,
-              height: 24,
-              borderRadius: 4,
+              width: 26,
+              height: 26,
+              borderRadius: 5,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -177,9 +178,9 @@ export function Sidebar({
             testId="clear-history-btn"
             onClick={onClearHistory}
             style={{
-              width: 24,
-              height: 24,
-              borderRadius: 4,
+              width: 26,
+              height: 26,
+              borderRadius: 5,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -197,29 +198,25 @@ export function Sidebar({
         style={{
           paddingLeft: 10,
           paddingRight: 10,
-          paddingTop: 8,
+          paddingTop: 4,
           paddingBottom: 8,
-          borderBottomWidth: 1,
-          borderColor: C.cardBorder,
           flexShrink: 0,
         }}
       >
         <div
           style={{
-            height: 28,
+            height: 32,
             borderRadius: 6,
-            backgroundColor: C.surface,
-            borderWidth: 1,
-            borderColor: C.border,
+            backgroundColor: '#1B1B1F',
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
-            gap: 6,
-            paddingLeft: 8,
-            paddingRight: 8,
+            gap: 8,
+            paddingLeft: 10,
+            paddingRight: 10,
           }}
         >
-          <Icon name="search" size={12} color={C.tertiary} />
+          <Icon name="search" size={13} color={C.tertiary} />
           <input
             testId="sidebar-search-input"
             value={searchQuery}
@@ -227,7 +224,7 @@ export function Sidebar({
             theme={{ text: C.text, textMuted: C.secondary, textFaint: C.tertiary }}
             style={{
               width: '100%',
-              fontSize: 11,
+              fontSize: 12.5,
               fontFamily: FONT_SANS,
               color: C.text,
               backgroundColor: 'transparent',
@@ -247,7 +244,7 @@ export function Sidebar({
           flexGrow: 1,
           paddingLeft: 8,
           paddingRight: 8,
-          paddingTop: 8,
+          paddingTop: 4,
           paddingBottom: 8,
           overflow: 'hidden',
           gap: 2,
@@ -255,8 +252,8 @@ export function Sidebar({
       >
         {activeTab === 'collections' ? (
           filteredCollections.length === 0 ? (
-            <div style={{ padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
+            <div style={{ padding: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <text style={{ fontSize: 13, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
                 No collections found
               </text>
             </div>
@@ -270,14 +267,14 @@ export function Sidebar({
                     testId={`collection-${col.id}`}
                     onClick={() => toggleCollection(col.id)}
                     style={{
-                      height: 28,
+                      height: 32,
                       display: 'flex',
                       flexDirection: 'row',
                       alignItems: 'center',
-                      gap: 6,
-                      paddingLeft: 6,
-                      paddingRight: 6,
-                      borderRadius: 5,
+                      gap: 7,
+                      paddingLeft: 8,
+                      paddingRight: 8,
+                      borderRadius: 6,
                       cursor: 'pointer',
                       hover: { backgroundColor: C.surfaceHighlight },
                     }}
@@ -286,7 +283,7 @@ export function Sidebar({
                     <Icon name="collection" size={13} color={C.accent} />
                     <text
                       style={{
-                        fontSize: 12,
+                        fontSize: 13,
                         fontFamily: FONT_SANS,
                         fontWeight: '600',
                         color: C.text,
@@ -310,21 +307,21 @@ export function Sidebar({
                               testId={`folder-${folder.id}`}
                               onClick={() => toggleFolder(folder.id)}
                               style={{
-                                height: 26,
+                                height: 28,
                                 display: 'flex',
                                 flexDirection: 'row',
                                 alignItems: 'center',
                                 gap: 6,
-                                paddingLeft: 6,
-                                paddingRight: 6,
-                                borderRadius: 4,
+                                paddingLeft: 8,
+                                paddingRight: 8,
+                                borderRadius: 5,
                                 cursor: 'pointer',
                                 hover: { backgroundColor: C.surfaceHighlight },
                               }}
                             >
                               <Icon name={isFolderExpanded ? 'chevronDown' : 'chevronRight'} size={10} color={C.tertiary} />
-                              <Icon name="folder" size={12} color={C.secondary} />
-                              <text style={{ fontSize: 11, fontFamily: FONT_SANS, color: C.secondary, whiteSpace: 'nowrap', flexGrow: 1 }}>
+                              <Icon name="folder" size={13} color={C.secondary} />
+                              <text style={{ fontSize: 12.5, fontFamily: FONT_SANS, color: C.secondary, whiteSpace: 'nowrap', flexGrow: 1 }}>
                                 {folder.name}
                               </text>
                             </Button>
@@ -366,8 +363,8 @@ export function Sidebar({
         ) : (
           /* History Tab */
           filteredHistory.length === 0 ? (
-            <div style={{ padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
+            <div style={{ padding: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <text style={{ fontSize: 13, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
                 No request history
               </text>
             </div>
@@ -378,7 +375,7 @@ export function Sidebar({
                 testId={`history-item-${item.id}`}
                 onClick={() => onSelectRequest(item.request)}
                 style={{
-                  height: 32,
+                  height: 34,
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -390,10 +387,10 @@ export function Sidebar({
                   hover: { backgroundColor: C.surfaceHighlight },
                 }}
               >
-                <div style={{ width: 34, flexShrink: 0 }}>
+                <div style={{ width: 38, flexShrink: 0 }}>
                   <text
                     style={{
-                      fontSize: 10,
+                      fontSize: 11,
                       fontFamily: FONT_MONO,
                       fontWeight: '700',
                       color: C.methods[item.request.method] || C.text,
@@ -405,7 +402,7 @@ export function Sidebar({
                 </div>
                 <text
                   style={{
-                    fontSize: 11,
+                    fontSize: 12.5,
                     fontFamily: FONT_SANS,
                     color: C.text,
                     whiteSpace: 'nowrap',
@@ -417,8 +414,9 @@ export function Sidebar({
                 {item.response && (
                   <text
                     style={{
-                      fontSize: 10,
+                      fontSize: 11,
                       fontFamily: FONT_MONO,
+                      fontWeight: '600',
                       color: item.response.status >= 200 && item.response.status < 300 ? C.success : C.warning,
                       whiteSpace: 'nowrap',
                       flexShrink: 0,
@@ -454,23 +452,23 @@ function RequestTreeRow({
       testId={`request-row-${request.id}`}
       onClick={onSelect}
       style={{
-        height: 26,
+        height: 28,
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
         gap: 6,
-        paddingLeft: 6,
-        paddingRight: 6,
-        borderRadius: 4,
+        paddingLeft: 8,
+        paddingRight: 8,
+        borderRadius: 5,
         cursor: 'pointer',
         backgroundColor: active ? C.surfaceHighlight : 'transparent',
         hover: { backgroundColor: C.surfaceHighlight },
       }}
     >
-      <div style={{ width: 30, flexShrink: 0 }}>
+      <div style={{ width: 34, flexShrink: 0 }}>
         <text
           style={{
-            fontSize: 9,
+            fontSize: 10.5,
             fontFamily: FONT_MONO,
             fontWeight: '700',
             color: methodColor,
@@ -482,7 +480,7 @@ function RequestTreeRow({
       </div>
       <text
         style={{
-          fontSize: 11,
+          fontSize: 12.5,
           fontFamily: FONT_SANS,
           color: active ? C.text : C.secondary,
           whiteSpace: 'nowrap',

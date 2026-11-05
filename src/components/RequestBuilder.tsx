@@ -106,24 +106,22 @@ export function RequestBuilder({
             testId="method-selector-button"
             onClick={() => setMethodMenuOpen((prev) => !prev)}
             style={{
-              height: 36,
-              paddingLeft: 12,
+              height: 38,
+              paddingLeft: 14,
               paddingRight: 10,
               borderRadius: 8,
               backgroundColor: C.surface,
-              borderWidth: 1,
-              borderColor: C.border,
               display: 'flex',
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 6,
+              gap: 8,
               cursor: 'pointer',
               hover: { backgroundColor: C.surfaceHighlight },
             }}
           >
             <text
               style={{
-                fontSize: 12,
+                fontSize: 13,
                 fontFamily: FONT_MONO,
                 fontWeight: '700',
                 color: methodColor,
@@ -140,24 +138,15 @@ export function RequestBuilder({
             <div
               style={{
                 position: 'absolute',
-                top: 40,
+                top: 42,
                 left: 0,
-                width: 120,
-                backgroundColor: C.surface,
+                width: 130,
+                backgroundColor: '#1E1E23',
                 borderRadius: 8,
-                borderWidth: 1,
-                borderColor: C.borderStrong,
                 padding: 4,
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 2,
-                boxShadow: {
-                  offsetX: 0,
-                  offsetY: 8,
-                  blurRadius: 16,
-                  spreadRadius: 0,
-                  color: '#00000088',
-                },
               }}
             >
               {METHODS.map((m) => (
@@ -169,10 +158,10 @@ export function RequestBuilder({
                     setMethodMenuOpen(false)
                   }}
                   style={{
-                    height: 28,
+                    height: 30,
                     display: 'flex',
                     alignItems: 'center',
-                    paddingLeft: 8,
+                    paddingLeft: 10,
                     borderRadius: 5,
                     cursor: 'pointer',
                     backgroundColor: request.method === m ? C.surfaceHighlight : 'transparent',
@@ -181,7 +170,7 @@ export function RequestBuilder({
                 >
                   <text
                     style={{
-                      fontSize: 11,
+                      fontSize: 12.5,
                       fontFamily: FONT_MONO,
                       fontWeight: '700',
                       color: C.methods[m] || C.text,
@@ -200,15 +189,14 @@ export function RequestBuilder({
         <div
           style={{
             flexGrow: 1,
-            height: 36,
+            height: 38,
             borderRadius: 8,
             backgroundColor: C.surface,
-            borderWidth: 1,
-            borderColor: C.border,
             display: 'flex',
             alignItems: 'center',
-            paddingLeft: 12,
-            paddingRight: 12,
+            paddingLeft: 14,
+            paddingRight: 14,
+            hover: { backgroundColor: C.surfaceHighlight },
           }}
         >
           <input
@@ -218,7 +206,7 @@ export function RequestBuilder({
             theme={{ text: C.text, textMuted: C.secondary, textFaint: C.tertiary }}
             style={{
               width: '100%',
-              fontSize: 13,
+              fontSize: 13.5,
               fontFamily: FONT_MONO,
               color: C.text,
               backgroundColor: 'transparent',
@@ -236,15 +224,15 @@ export function RequestBuilder({
           disabled={isLoading}
           onClick={onSend}
           style={{
-            height: 36,
-            paddingLeft: 16,
-            paddingRight: 16,
+            height: 38,
+            paddingLeft: 18,
+            paddingRight: 18,
             borderRadius: 8,
             backgroundColor: C.accent,
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
-            gap: 6,
+            gap: 7,
             cursor: isLoading ? 'default' : 'pointer',
             opacity: isLoading ? 0.6 : 1,
             hover: isLoading ? undefined : { backgroundColor: C.accentHover },
@@ -253,7 +241,7 @@ export function RequestBuilder({
           <Icon name="send" size={13} color="#FFFFFF" />
           <text
             style={{
-              fontSize: 12,
+              fontSize: 13,
               fontFamily: FONT_SANS,
               fontWeight: '600',
               color: '#FFFFFF',
@@ -269,13 +257,11 @@ export function RequestBuilder({
           testId="save-request-button"
           onClick={onSave}
           style={{
-            height: 36,
-            paddingLeft: 12,
-            paddingRight: 12,
+            height: 38,
+            paddingLeft: 14,
+            paddingRight: 14,
             borderRadius: 8,
             backgroundColor: C.surface,
-            borderWidth: 1,
-            borderColor: C.border,
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
@@ -287,7 +273,7 @@ export function RequestBuilder({
           <Icon name="save" size={13} color={C.secondary} />
           <text
             style={{
-              fontSize: 12,
+              fontSize: 13,
               fontFamily: FONT_SANS,
               color: C.secondary,
               whiteSpace: 'nowrap',
@@ -304,11 +290,9 @@ export function RequestBuilder({
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
-          gap: 4,
-          borderBottomWidth: 1,
-          borderColor: C.border,
+          gap: 6,
           paddingBottom: 4,
-          marginTop: 4,
+          marginTop: 6,
         }}
       >
         <TabButton
@@ -355,7 +339,7 @@ export function RequestBuilder({
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {/* Common Header Presets */}
             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <text style={{ fontSize: 11, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
+              <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
                 Presets:
               </text>
               <PresetButton
@@ -434,9 +418,9 @@ function TabButton({
       testId={testId}
       onClick={onClick}
       style={{
-        height: 28,
-        paddingLeft: 10,
-        paddingRight: 10,
+        height: 30,
+        paddingLeft: 12,
+        paddingRight: 12,
         borderRadius: 6,
         display: 'flex',
         flexDirection: 'row',
@@ -449,9 +433,9 @@ function TabButton({
     >
       <text
         style={{
-          fontSize: 12,
+          fontSize: 13,
           fontFamily: FONT_SANS,
-          fontWeight: active ? '600' : '400',
+          fontWeight: active ? '600' : '500',
           color: active ? C.text : C.secondary,
           whiteSpace: 'nowrap',
         }}
@@ -461,13 +445,13 @@ function TabButton({
       {typeof count === 'number' && count > 0 && (
         <div
           style={{
-            paddingLeft: 5,
-            paddingRight: 5,
+            paddingLeft: 6,
+            paddingRight: 6,
             borderRadius: 10,
-            backgroundColor: C.cardBorder,
+            backgroundColor: '#27272D',
           }}
         >
-          <text style={{ fontSize: 10, fontFamily: FONT_MONO, color: C.accent, whiteSpace: 'nowrap' }}>
+          <text style={{ fontSize: 11, fontFamily: FONT_MONO, fontWeight: '600', color: C.accent, whiteSpace: 'nowrap' }}>
             {`${count}`}
           </text>
         </div>
@@ -481,20 +465,18 @@ function PresetButton({ label, onClick }: { label: string; onClick: () => void }
     <Button
       onClick={onClick}
       style={{
-        height: 20,
-        paddingLeft: 6,
-        paddingRight: 6,
+        height: 24,
+        paddingLeft: 8,
+        paddingRight: 8,
         borderRadius: 4,
         backgroundColor: C.surface,
-        borderWidth: 1,
-        borderColor: C.border,
         display: 'flex',
         alignItems: 'center',
         cursor: 'pointer',
         hover: { backgroundColor: C.surfaceHighlight },
       }}
     >
-      <text style={{ fontSize: 10, fontFamily: FONT_MONO, color: C.secondary, whiteSpace: 'nowrap' }}>
+      <text style={{ fontSize: 11.5, fontFamily: FONT_MONO, color: C.secondary, whiteSpace: 'nowrap' }}>
         {label}
       </text>
     </Button>
@@ -516,7 +498,7 @@ function AuthPane({
   ]
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {/* Auth Type Selector */}
       <div style={{ display: 'flex', flexDirection: 'row', gap: 6 }}>
         {types.map((t) => (
@@ -525,22 +507,21 @@ function AuthPane({
             testId={`auth-type-${t.id}`}
             onClick={() => onChange({ ...auth, type: t.id })}
             style={{
-              height: 26,
-              paddingLeft: 10,
-              paddingRight: 10,
+              height: 28,
+              paddingLeft: 12,
+              paddingRight: 12,
               borderRadius: 6,
               display: 'flex',
               alignItems: 'center',
               cursor: 'pointer',
               backgroundColor: auth.type === t.id ? C.surfaceHighlight : C.surface,
-              borderWidth: 1,
-              borderColor: auth.type === t.id ? C.accent : C.border,
             }}
           >
             <text
               style={{
-                fontSize: 11,
+                fontSize: 12.5,
                 fontFamily: FONT_SANS,
+                fontWeight: auth.type === t.id ? '600' : '400',
                 color: auth.type === t.id ? C.text : C.secondary,
                 whiteSpace: 'nowrap',
               }}
@@ -552,27 +533,25 @@ function AuthPane({
       </div>
 
       {auth.type === 'none' && (
-        <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
+        <text style={{ fontSize: 13, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
           This request does not use any authorization.
         </text>
       )}
 
       {auth.type === 'bearer' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxWidth: 480 }}>
-          <text style={{ fontSize: 11, fontFamily: FONT_SANS, fontWeight: '600', color: C.secondary, whiteSpace: 'nowrap' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxWidth: 520 }}>
+          <text style={{ fontSize: 12, fontFamily: FONT_SANS, fontWeight: '600', color: C.secondary, whiteSpace: 'nowrap' }}>
             TOKEN
           </text>
           <div
             style={{
-              height: 32,
+              height: 36,
               borderRadius: 6,
               backgroundColor: C.surface,
-              borderWidth: 1,
-              borderColor: C.border,
               display: 'flex',
               alignItems: 'center',
-              paddingLeft: 10,
-              paddingRight: 10,
+              paddingLeft: 12,
+              paddingRight: 12,
             }}
           >
             <input
@@ -582,7 +561,7 @@ function AuthPane({
               theme={{ text: C.text, textMuted: C.secondary, textFaint: C.tertiary }}
               style={{
                 width: '100%',
-                fontSize: 12,
+                fontSize: 13,
                 fontFamily: FONT_MONO,
                 color: C.text,
                 backgroundColor: 'transparent',
@@ -596,33 +575,33 @@ function AuthPane({
       )}
 
       {auth.type === 'basic' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 480 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 520 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <text style={{ fontSize: 11, fontFamily: FONT_SANS, fontWeight: '600', color: C.secondary, whiteSpace: 'nowrap' }}>
+            <text style={{ fontSize: 12, fontFamily: FONT_SANS, fontWeight: '600', color: C.secondary, whiteSpace: 'nowrap' }}>
               USERNAME
             </text>
-            <div style={{ height: 32, borderRadius: 6, backgroundColor: C.surface, borderWidth: 1, borderColor: C.border, display: 'flex', alignItems: 'center', paddingLeft: 10, paddingRight: 10 }}>
+            <div style={{ height: 36, borderRadius: 6, backgroundColor: C.surface, display: 'flex', alignItems: 'center', paddingLeft: 12, paddingRight: 12 }}>
               <input
                 testId="basic-username-input"
                 value={auth.basicUsername ?? ''}
                 placeholder="Username or {{username}}"
                 theme={{ text: C.text, textMuted: C.secondary, textFaint: C.tertiary }}
-                style={{ width: '100%', fontSize: 12, fontFamily: FONT_MONO, color: C.text, backgroundColor: 'transparent', borderWidth: 0, padding: 0 }}
+                style={{ width: '100%', fontSize: 13, fontFamily: FONT_MONO, color: C.text, backgroundColor: 'transparent', borderWidth: 0, padding: 0 }}
                 onChange={(e) => onChange({ ...auth, basicUsername: e.value ?? '' })}
               />
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <text style={{ fontSize: 11, fontFamily: FONT_SANS, fontWeight: '600', color: C.secondary, whiteSpace: 'nowrap' }}>
+            <text style={{ fontSize: 12, fontFamily: FONT_SANS, fontWeight: '600', color: C.secondary, whiteSpace: 'nowrap' }}>
               PASSWORD
             </text>
-            <div style={{ height: 32, borderRadius: 6, backgroundColor: C.surface, borderWidth: 1, borderColor: C.border, display: 'flex', alignItems: 'center', paddingLeft: 10, paddingRight: 10 }}>
+            <div style={{ height: 36, borderRadius: 6, backgroundColor: C.surface, display: 'flex', alignItems: 'center', paddingLeft: 12, paddingRight: 12 }}>
               <input
                 testId="basic-password-input"
                 value={auth.basicPassword ?? ''}
                 placeholder="Password or {{password}}"
                 theme={{ text: C.text, textMuted: C.secondary, textFaint: C.tertiary }}
-                style={{ width: '100%', fontSize: 12, fontFamily: FONT_MONO, color: C.text, backgroundColor: 'transparent', borderWidth: 0, padding: 0 }}
+                style={{ width: '100%', fontSize: 13, fontFamily: FONT_MONO, color: C.text, backgroundColor: 'transparent', borderWidth: 0, padding: 0 }}
                 onChange={(e) => onChange({ ...auth, basicPassword: e.value ?? '' })}
               />
             </div>
@@ -631,33 +610,33 @@ function AuthPane({
       )}
 
       {auth.type === 'apikey' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 480 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 520 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <text style={{ fontSize: 11, fontFamily: FONT_SANS, fontWeight: '600', color: C.secondary, whiteSpace: 'nowrap' }}>
+            <text style={{ fontSize: 12, fontFamily: FONT_SANS, fontWeight: '600', color: C.secondary, whiteSpace: 'nowrap' }}>
               KEY NAME
             </text>
-            <div style={{ height: 32, borderRadius: 6, backgroundColor: C.surface, borderWidth: 1, borderColor: C.border, display: 'flex', alignItems: 'center', paddingLeft: 10, paddingRight: 10 }}>
+            <div style={{ height: 36, borderRadius: 6, backgroundColor: C.surface, display: 'flex', alignItems: 'center', paddingLeft: 12, paddingRight: 12 }}>
               <input
                 testId="apikey-key-input"
                 value={auth.apiKeyKey ?? ''}
                 placeholder="X-API-Key"
                 theme={{ text: C.text, textMuted: C.secondary, textFaint: C.tertiary }}
-                style={{ width: '100%', fontSize: 12, fontFamily: FONT_MONO, color: C.text, backgroundColor: 'transparent', borderWidth: 0, padding: 0 }}
+                style={{ width: '100%', fontSize: 13, fontFamily: FONT_MONO, color: C.text, backgroundColor: 'transparent', borderWidth: 0, padding: 0 }}
                 onChange={(e) => onChange({ ...auth, apiKeyKey: e.value ?? '' })}
               />
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <text style={{ fontSize: 11, fontFamily: FONT_SANS, fontWeight: '600', color: C.secondary, whiteSpace: 'nowrap' }}>
+            <text style={{ fontSize: 12, fontFamily: FONT_SANS, fontWeight: '600', color: C.secondary, whiteSpace: 'nowrap' }}>
               VALUE
             </text>
-            <div style={{ height: 32, borderRadius: 6, backgroundColor: C.surface, borderWidth: 1, borderColor: C.border, display: 'flex', alignItems: 'center', paddingLeft: 10, paddingRight: 10 }}>
+            <div style={{ height: 36, borderRadius: 6, backgroundColor: C.surface, display: 'flex', alignItems: 'center', paddingLeft: 12, paddingRight: 12 }}>
               <input
                 testId="apikey-val-input"
                 value={auth.apiKeyValue ?? ''}
                 placeholder="Secret key or {{apiKey}}"
                 theme={{ text: C.text, textMuted: C.secondary, textFaint: C.tertiary }}
-                style={{ width: '100%', fontSize: 12, fontFamily: FONT_MONO, color: C.text, backgroundColor: 'transparent', borderWidth: 0, padding: 0 }}
+                style={{ width: '100%', fontSize: 13, fontFamily: FONT_MONO, color: C.text, backgroundColor: 'transparent', borderWidth: 0, padding: 0 }}
                 onChange={(e) => onChange({ ...auth, apiKeyValue: e.value ?? '' })}
               />
             </div>
@@ -697,22 +676,21 @@ function BodyPane({
               testId={`body-type-${t.id}`}
               onClick={() => onChange({ ...body, type: t.id })}
               style={{
-                height: 26,
-                paddingLeft: 10,
-                paddingRight: 10,
+                height: 28,
+                paddingLeft: 12,
+                paddingRight: 12,
                 borderRadius: 6,
                 display: 'flex',
                 alignItems: 'center',
                 cursor: 'pointer',
                 backgroundColor: body.type === t.id ? C.surfaceHighlight : C.surface,
-                borderWidth: 1,
-                borderColor: body.type === t.id ? C.accent : C.border,
               }}
             >
               <text
                 style={{
-                  fontSize: 11,
+                  fontSize: 12.5,
                   fontFamily: FONT_SANS,
+                  fontWeight: body.type === t.id ? '600' : '400',
                   color: body.type === t.id ? C.text : C.secondary,
                   whiteSpace: 'nowrap',
                 }}
@@ -728,23 +706,21 @@ function BodyPane({
             testId="format-json-button"
             onClick={onFormatJson}
             style={{
-              height: 26,
-              paddingLeft: 10,
-              paddingRight: 10,
+              height: 28,
+              paddingLeft: 12,
+              paddingRight: 12,
               borderRadius: 6,
               backgroundColor: C.surface,
-              borderWidth: 1,
-              borderColor: C.border,
               display: 'flex',
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 4,
+              gap: 6,
               cursor: 'pointer',
               hover: { backgroundColor: C.surfaceHighlight },
             }}
           >
             <Icon name="sparkle" size={12} color={C.accent} />
-            <text style={{ fontSize: 11, fontFamily: FONT_SANS, color: C.text, whiteSpace: 'nowrap' }}>
+            <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.text, whiteSpace: 'nowrap' }}>
               Format JSON
             </text>
           </Button>
@@ -752,13 +728,13 @@ function BodyPane({
       </div>
 
       {jsonError && (
-        <text style={{ fontSize: 11, fontFamily: FONT_MONO, color: C.error, whiteSpace: 'nowrap' }}>
+        <text style={{ fontSize: 12, fontFamily: FONT_MONO, color: C.error, whiteSpace: 'nowrap' }}>
           {`JSON Error: ${jsonError}`}
         </text>
       )}
 
       {body.type === 'none' && (
-        <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
+        <text style={{ fontSize: 13, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
           This request has no body.
         </text>
       )}
@@ -768,9 +744,7 @@ function BodyPane({
           style={{
             borderRadius: 8,
             backgroundColor: C.surface,
-            borderWidth: 1,
-            borderColor: C.border,
-            padding: 10,
+            padding: 12,
           }}
         >
           <textarea
@@ -782,8 +756,8 @@ function BodyPane({
             theme={{ text: C.text, textMuted: C.secondary, textFaint: C.tertiary }}
             style={{
               width: '100%',
-              fontSize: 12,
-              lineHeight: 18,
+              fontSize: 13,
+              lineHeight: 20,
               fontFamily: FONT_MONO,
               color: C.text,
               backgroundColor: 'transparent',

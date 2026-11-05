@@ -31,12 +31,10 @@ export function StatusBar({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        height: 26,
+        height: 28,
         backgroundColor: C.header,
-        borderTopWidth: 1,
-        borderColor: C.border,
-        paddingLeft: 12,
-        paddingRight: 12,
+        paddingLeft: 14,
+        paddingRight: 14,
         flexShrink: 0,
         userSelect: 'none',
       }}
@@ -50,19 +48,19 @@ export function StatusBar({
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
-            gap: 4,
+            gap: 5,
             paddingLeft: 6,
             paddingRight: 6,
-            height: 18,
+            height: 20,
             borderRadius: 4,
             cursor: 'pointer',
             hover: { backgroundColor: C.overlay },
           }}
         >
-          <Icon name="environment" size={10} color={activeEnvironment ? C.accent : C.tertiary} />
+          <Icon name="environment" size={11} color={activeEnvironment ? C.accent : C.tertiary} />
           <text
             style={{
-              fontSize: 10,
+              fontSize: 12,
               fontFamily: FONT_SANS,
               color: activeEnvironment ? C.secondary : C.tertiary,
               whiteSpace: 'nowrap',
@@ -77,14 +75,14 @@ export function StatusBar({
       <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         {isLoading ? (
           <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Icon name="sparkle" size={10} color={C.accent} />
-            <text style={{ fontSize: 10, fontFamily: FONT_SANS, color: C.accent, whiteSpace: 'nowrap' }}>
+            <Icon name="sparkle" size={11} color={C.accent} />
+            <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.accent, whiteSpace: 'nowrap' }}>
               Sending HTTP request...
             </text>
           </div>
         ) : response ? (
           <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 5 }}>
               <div
                 style={{
                   width: 6,
@@ -95,7 +93,7 @@ export function StatusBar({
               />
               <text
                 style={{
-                  fontSize: 10,
+                  fontSize: 12,
                   fontFamily: FONT_MONO,
                   fontWeight: '700',
                   color: getStatusColor(response.status),
@@ -105,57 +103,57 @@ export function StatusBar({
                 {`${response.status} ${response.statusText}`}
               </text>
             </div>
-            <text style={{ fontSize: 10, fontFamily: FONT_MONO, color: C.tertiary, whiteSpace: 'nowrap' }}>
+            <text style={{ fontSize: 12, fontFamily: FONT_MONO, color: C.tertiary, whiteSpace: 'nowrap' }}>
               ·
             </text>
-            <text style={{ fontSize: 10, fontFamily: FONT_MONO, color: C.secondary, whiteSpace: 'nowrap' }}>
+            <text style={{ fontSize: 12, fontFamily: FONT_MONO, color: C.secondary, whiteSpace: 'nowrap' }}>
               {`${response.timeMs}ms`}
             </text>
-            <text style={{ fontSize: 10, fontFamily: FONT_MONO, color: C.tertiary, whiteSpace: 'nowrap' }}>
+            <text style={{ fontSize: 12, fontFamily: FONT_MONO, color: C.tertiary, whiteSpace: 'nowrap' }}>
               ·
             </text>
-            <text style={{ fontSize: 10, fontFamily: FONT_MONO, color: C.secondary, whiteSpace: 'nowrap' }}>
+            <text style={{ fontSize: 12, fontFamily: FONT_MONO, color: C.secondary, whiteSpace: 'nowrap' }}>
               {formatBytes(response.sizeBytes)}
             </text>
           </div>
         ) : (
-          <text style={{ fontSize: 10, fontFamily: FONT_SANS, color: C.ghost, whiteSpace: 'nowrap' }}>
+          <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.ghost, whiteSpace: 'nowrap' }}>
             Ready
           </text>
         )}
       </div>
 
       {/* Right: Keyboard shortcuts cheat sheet */}
-      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-          <text style={{ fontSize: 9, fontFamily: FONT_MONO, color: C.tertiary, whiteSpace: 'nowrap' }}>
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <text style={{ fontSize: 11, fontFamily: FONT_MONO, color: C.tertiary, whiteSpace: 'nowrap' }}>
             ^⏎
           </text>
-          <text style={{ fontSize: 10, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
+          <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
             Send
           </text>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-          <text style={{ fontSize: 9, fontFamily: FONT_MONO, color: C.tertiary, whiteSpace: 'nowrap' }}>
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <text style={{ fontSize: 11, fontFamily: FONT_MONO, color: C.tertiary, whiteSpace: 'nowrap' }}>
             ^S
           </text>
-          <text style={{ fontSize: 10, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
+          <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
             Save
           </text>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-          <text style={{ fontSize: 9, fontFamily: FONT_MONO, color: C.tertiary, whiteSpace: 'nowrap' }}>
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <text style={{ fontSize: 11, fontFamily: FONT_MONO, color: C.tertiary, whiteSpace: 'nowrap' }}>
             ^N
           </text>
-          <text style={{ fontSize: 10, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
+          <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
             New
           </text>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-          <text style={{ fontSize: 9, fontFamily: FONT_MONO, color: C.tertiary, whiteSpace: 'nowrap' }}>
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <text style={{ fontSize: 11, fontFamily: FONT_MONO, color: C.tertiary, whiteSpace: 'nowrap' }}>
             ^B
           </text>
-          <text style={{ fontSize: 10, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
+          <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
             Sidebar
           </text>
         </div>
