@@ -161,6 +161,8 @@ export function Settings({
             paddingLeft: 24,
             paddingRight: 14,
             backgroundColor: C.header,
+            borderBottomWidth: 1,
+            borderColor: C.border,
           }}
         >
           <DragRegion

@@ -33,6 +33,8 @@ export function StatusBar({
         justifyContent: 'space-between',
         height: 28,
         backgroundColor: C.header,
+        borderTopWidth: 1,
+        borderColor: C.border,
         paddingLeft: 14,
         paddingRight: 14,
         flexShrink: 0,

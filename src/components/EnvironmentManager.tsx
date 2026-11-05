@@ -240,6 +240,8 @@ export function EnvironmentManager({
             flexDirection: 'row',
             alignItems: 'center',
             height: TITLEBAR_HEIGHT,
+            borderBottomWidth: 1,
+            borderColor: C.border,
             paddingLeft: 24,
             paddingRight: 14,
             backgroundColor: C.header,
