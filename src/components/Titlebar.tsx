@@ -45,7 +45,7 @@ export function WindowControls() {
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 6,
+        gap: 4,
         height: '100%',
         flexShrink: 0,
       }}
@@ -55,9 +55,9 @@ export function WindowControls() {
         aria-label="Minimize"
         onClick={() => renderer?.minimizeWindow?.()}
         style={{
-          width: 28,
-          height: 28,
-          borderRadius: 14,
+          width: 30,
+          height: 30,
+          borderRadius: 6,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -66,7 +66,7 @@ export function WindowControls() {
           active: { backgroundColor: C.overlayStrong },
         }}
       >
-        <Icon name="windowMinimize" size={13} color={C.secondary} />
+        <Icon name="windowMinimize" size={12} color={C.secondary} />
       </Button>
       <Button
         testId="window-maximize"
@@ -77,9 +77,9 @@ export function WindowControls() {
         }}
         onMouseEnter={() => setMaximized(isWindowMaximized())}
         style={{
-          width: 28,
-          height: 28,
-          borderRadius: 14,
+          width: 30,
+          height: 30,
+          borderRadius: 6,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -97,9 +97,9 @@ export function WindowControls() {
           if (typeof process !== 'undefined') process.exit(0)
         }}
         style={{
-          width: 28,
-          height: 28,
-          borderRadius: 14,
+          width: 30,
+          height: 30,
+          borderRadius: 6,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -149,10 +149,8 @@ export function Titlebar({
         width: '100%',
         height: TITLEBAR_HEIGHT,
         backgroundColor: C.header,
-        borderBottomWidth: 1,
-        borderColor: C.border,
-        paddingLeft: IS_DARWIN ? 76 : 14,
-        paddingRight: 14,
+        paddingLeft: IS_DARWIN ? 76 : 12,
+        paddingRight: 10,
         flexShrink: 0,
         userSelect: 'none',
       }}
@@ -163,7 +161,7 @@ export function Titlebar({
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
-          gap: 10,
+          gap: 8,
           flexShrink: 0,
         }}
       >
@@ -174,10 +172,10 @@ export function Titlebar({
           tooltip="Toggle Sidebar (Ctrl+B)"
           onClick={onToggleSidebar}
         />
-        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', paddingLeft: 2 }}>
           <text
             style={{
-              fontSize: 13,
+              fontSize: 14,
               fontFamily: FONT_SANS,
               fontWeight: '600',
               color: C.text,
@@ -196,7 +194,7 @@ export function Titlebar({
           flexGrow: 1,
           flexShrink: 1,
           minWidth: 0,
-          maxWidth: 700,
+          maxWidth: 680,
           height: '100%',
           display: 'flex',
           flexDirection: 'row',
@@ -210,8 +208,8 @@ export function Titlebar({
         {method && (
           <div
             style={{
-              paddingLeft: 6,
-              paddingRight: 6,
+              paddingLeft: 7,
+              paddingRight: 7,
               paddingTop: 2,
               paddingBottom: 2,
               borderRadius: 4,
@@ -220,7 +218,7 @@ export function Titlebar({
           >
             <text
               style={{
-                fontSize: 10,
+                fontSize: 11,
                 fontFamily: FONT_MONO,
                 fontWeight: '700',
                 color: methodColor,
@@ -233,8 +231,9 @@ export function Titlebar({
         )}
         <text
           style={{
-            fontSize: 12,
+            fontSize: 13.5,
             fontFamily: FONT_SANS,
+            fontWeight: '500',
             color: requestName ? C.text : C.tertiary,
             whiteSpace: 'nowrap',
           }}
@@ -249,7 +248,7 @@ export function Titlebar({
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
-          gap: 8,
+          gap: 6,
           flexShrink: 0,
         }}
       >
@@ -263,30 +262,28 @@ export function Titlebar({
               flexDirection: 'row',
               alignItems: 'center',
               gap: 6,
-              paddingLeft: 8,
-              paddingRight: 8,
-              height: 26,
+              paddingLeft: 10,
+              paddingRight: 10,
+              height: 28,
               borderRadius: 6,
-              backgroundColor: environment ? C.surface : 'transparent',
-              borderWidth: 1,
-              borderColor: environment ? C.border : 'transparent',
+              backgroundColor: environment ? '#1D1D22' : 'transparent',
               cursor: 'pointer',
-              hover: { backgroundColor: C.surfaceHighlight },
+              hover: { backgroundColor: '#26262D' },
             }}
           >
-            <Icon name="environment" size={11} color={environment ? C.accent : C.tertiary} />
+            <Icon name="environment" size={12} color={environment ? C.accent : C.tertiary} />
             <text
               style={{
-                fontSize: 11,
+                fontSize: 12.5,
                 fontFamily: FONT_SANS,
-                fontWeight: environment ? '500' : '400',
+                fontWeight: '500',
                 color: environment ? C.text : C.secondary,
                 whiteSpace: 'nowrap',
               }}
             >
               {environment ? environment.name : 'No Environment'}
             </text>
-            <Icon name="chevronDown" size={10} color={C.tertiary} />
+            <Icon name="chevronDown" size={11} color={C.tertiary} />
           </Button>
 
           {envMenuOpen && (
@@ -294,13 +291,11 @@ export function Titlebar({
               testId="env-dropdown-menu"
               style={{
                 position: 'absolute',
-                top: 30,
+                top: 32,
                 right: 0,
-                width: 190,
-                backgroundColor: C.card,
+                width: 200,
+                backgroundColor: '#1E1E23',
                 borderRadius: 8,
-                borderWidth: 1,
-                borderColor: C.borderStrong,
                 padding: 4,
                 display: 'flex',
                 flexDirection: 'column',
@@ -315,14 +310,14 @@ export function Titlebar({
                   setEnvMenuOpen(false)
                 }}
                 style={{
-                  height: 28,
+                  height: 30,
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  paddingLeft: 8,
-                  paddingRight: 8,
-                  borderRadius: 4,
+                  paddingLeft: 10,
+                  paddingRight: 10,
+                  borderRadius: 5,
                   cursor: 'pointer',
                   backgroundColor: !environment ? C.surfaceHighlight : 'transparent',
                   hover: { backgroundColor: C.overlay },
@@ -330,7 +325,7 @@ export function Titlebar({
               >
                 <text
                   style={{
-                    fontSize: 11,
+                    fontSize: 12.5,
                     fontFamily: FONT_SANS,
                     color: !environment ? C.accent : C.secondary,
                     whiteSpace: 'nowrap',
@@ -338,7 +333,7 @@ export function Titlebar({
                 >
                   No Environment
                 </text>
-                {!environment && <Icon name="check" size={11} color={C.accent} />}
+                {!environment && <Icon name="check" size={12} color={C.accent} />}
               </Button>
 
               {environments.map((env) => {
@@ -352,14 +347,14 @@ export function Titlebar({
                       setEnvMenuOpen(false)
                     }}
                     style={{
-                      height: 28,
+                      height: 30,
                       display: 'flex',
                       flexDirection: 'row',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      paddingLeft: 8,
-                      paddingRight: 8,
-                      borderRadius: 4,
+                      paddingLeft: 10,
+                      paddingRight: 10,
+                      borderRadius: 5,
                       cursor: 'pointer',
                       backgroundColor: isActive ? C.surfaceHighlight : 'transparent',
                       hover: { backgroundColor: C.overlay },
@@ -367,7 +362,7 @@ export function Titlebar({
                   >
                     <text
                       style={{
-                        fontSize: 11,
+                        fontSize: 12.5,
                         fontFamily: FONT_SANS,
                         color: isActive ? C.accent : C.text,
                         whiteSpace: 'nowrap',
@@ -375,7 +370,7 @@ export function Titlebar({
                     >
                       {env.name}
                     </text>
-                    {isActive && <Icon name="check" size={11} color={C.accent} />}
+                    {isActive && <Icon name="check" size={12} color={C.accent} />}
                   </Button>
                 )
               })}
@@ -389,20 +384,20 @@ export function Titlebar({
                   onOpenEnvironmentManager?.()
                 }}
                 style={{
-                  height: 28,
+                  height: 30,
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'center',
-                  gap: 6,
-                  paddingLeft: 8,
-                  paddingRight: 8,
-                  borderRadius: 4,
+                  gap: 8,
+                  paddingLeft: 10,
+                  paddingRight: 10,
+                  borderRadius: 5,
                   cursor: 'pointer',
                   hover: { backgroundColor: C.overlay },
                 }}
               >
-                <Icon name="settings" size={11} color={C.secondary} />
-                <text style={{ fontSize: 11, fontFamily: FONT_SANS, color: C.secondary, whiteSpace: 'nowrap' }}>
+                <Icon name="settings" size={12} color={C.secondary} />
+                <text style={{ fontSize: 12.5, fontFamily: FONT_SANS, color: C.secondary, whiteSpace: 'nowrap' }}>
                   Manage Environments...
                 </text>
               </Button>

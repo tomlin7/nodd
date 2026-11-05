@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from '@gpuix/react'
 import { Icon } from './Icons'
-import { C, FONT_MONO, FONT_SANS, IconButton } from '../theme'
+import { C, FONT_MONO, FONT_SANS } from '../theme'
 import type { KeyValuePair } from '../core/types'
 import { createId } from '../core/url'
 
@@ -55,19 +55,17 @@ export function KeyValueTable({
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
-          gap: 8,
-          paddingLeft: 8,
-          paddingRight: 8,
+          gap: 10,
+          paddingLeft: 10,
+          paddingRight: 10,
           paddingBottom: 4,
-          borderBottomWidth: 1,
-          borderColor: C.border,
         }}
       >
-        <div style={{ width: 24, flexShrink: 0 }} />
+        <div style={{ width: 20, flexShrink: 0 }} />
         <div style={{ flexGrow: 1, minWidth: 0 }}>
           <text
             style={{
-              fontSize: 11,
+              fontSize: 12,
               fontFamily: FONT_SANS,
               fontWeight: '600',
               color: C.tertiary,
@@ -80,7 +78,7 @@ export function KeyValueTable({
         <div style={{ flexGrow: 1, minWidth: 0 }}>
           <text
             style={{
-              fontSize: 11,
+              fontSize: 12,
               fontFamily: FONT_SANS,
               fontWeight: '600',
               color: C.tertiary,
@@ -106,7 +104,7 @@ export function KeyValueTable({
         >
           <text
             style={{
-              fontSize: 12,
+              fontSize: 13,
               fontFamily: FONT_SANS,
               color: C.tertiary,
               whiteSpace: 'nowrap',
@@ -123,14 +121,13 @@ export function KeyValueTable({
               display: 'flex',
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 8,
-              paddingLeft: 8,
-              paddingRight: 8,
-              height: 32,
+              gap: 10,
+              paddingLeft: 10,
+              paddingRight: 10,
+              height: 36,
               borderRadius: 6,
               backgroundColor: C.surface,
-              borderWidth: 1,
-              borderColor: C.border,
+              hover: { backgroundColor: C.surfaceHighlight },
             }}
           >
             {/* Enabled Checkbox Toggle */}
@@ -138,12 +135,10 @@ export function KeyValueTable({
               testId={`toggle-${pair.id}`}
               onClick={() => updatePair(pair.id, { enabled: !pair.enabled })}
               style={{
-                width: 18,
-                height: 18,
-                borderRadius: 4,
-                borderWidth: 1,
-                borderColor: pair.enabled ? C.accent : C.borderStrong,
-                backgroundColor: pair.enabled ? C.accent : 'transparent',
+                width: 20,
+                height: 20,
+                borderRadius: 5,
+                backgroundColor: pair.enabled ? C.accent : '#25252B',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -163,10 +158,9 @@ export function KeyValueTable({
                 theme={{ text: C.text, textMuted: C.secondary, textFaint: C.tertiary }}
                 style={{
                   width: '100%',
-                  height: 24,
-                  fontSize: 12,
+                  fontSize: 13,
                   fontFamily: FONT_MONO,
-                  color: pair.enabled ? C.text : C.tertiary,
+                  color: C.text,
                   backgroundColor: 'transparent',
                   borderWidth: 0,
                   padding: 0,
@@ -178,16 +172,15 @@ export function KeyValueTable({
             {/* Value Input */}
             <div style={{ flexGrow: 1, minWidth: 0 }}>
               <input
-                testId={`value-${pair.id}`}
+                testId={`val-${pair.id}`}
                 value={pair.value}
                 placeholder={valuePlaceholder}
                 theme={{ text: C.text, textMuted: C.secondary, textFaint: C.tertiary }}
                 style={{
                   width: '100%',
-                  height: 24,
-                  fontSize: 12,
+                  fontSize: 13,
                   fontFamily: FONT_MONO,
-                  color: pair.enabled ? C.text : C.tertiary,
+                  color: C.text,
                   backgroundColor: 'transparent',
                   borderWidth: 0,
                   padding: 0,
@@ -201,8 +194,8 @@ export function KeyValueTable({
               testId={`remove-${pair.id}`}
               onClick={() => removePair(pair.id)}
               style={{
-                width: 24,
-                height: 24,
+                width: 26,
+                height: 26,
                 borderRadius: 4,
                 display: 'flex',
                 alignItems: 'center',
@@ -212,21 +205,21 @@ export function KeyValueTable({
                 flexShrink: 0,
               }}
             >
-              <Icon name="trash" size={12} color={C.tertiary} />
+              <Icon name="trash" size={13} color={C.tertiary} />
             </Button>
           </div>
         ))
       )}
 
-      {/* Add Row Action */}
+      {/* Add Row Button */}
       <div style={{ display: 'flex', flexDirection: 'row', marginTop: 4 }}>
         <Button
           testId="add-row-button"
           onClick={addRow}
           style={{
-            height: 28,
-            paddingLeft: 10,
-            paddingRight: 10,
+            height: 32,
+            paddingLeft: 12,
+            paddingRight: 12,
             borderRadius: 6,
             display: 'flex',
             flexDirection: 'row',
@@ -234,15 +227,13 @@ export function KeyValueTable({
             gap: 6,
             cursor: 'pointer',
             backgroundColor: C.surface,
-            borderWidth: 1,
-            borderColor: C.border,
             hover: { backgroundColor: C.surfaceHighlight },
           }}
         >
           <Icon name="plus" size={12} color={C.secondary} />
           <text
             style={{
-              fontSize: 12,
+              fontSize: 12.5,
               fontFamily: FONT_SANS,
               color: C.secondary,
               whiteSpace: 'nowrap',
