@@ -1,7 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useState } from 'react'
 import { Button } from '@gpuix/react'
 import { Icon, type IconName } from './components/Icons'
-import { useTooltip } from './components/tooltip-layer'
 
 export const C = {
   canvas: '#121215',
@@ -68,30 +67,9 @@ export function IconButton({
   tooltip?: string
 }) {
   const [hovered, setHovered] = useState(false)
-  const { show, hide } = useTooltip()
-  const anchorRef = useRef<{ x: number; y: number; width: number; height: number } | null>(null)
-
-  const handleLayout = (event: any) => {
-    if (typeof event?.x !== 'number') return
-    anchorRef.current = {
-      x: event.x,
-      y: event.y,
-      width: event.width ?? 0,
-      height: event.height ?? 0,
-    }
-  }
-
-  useEffect(() => {
-    if (!hovered || !tooltip || active) {
-      hide()
-      return
-    }
-    const anchor = anchorRef.current
-    if (anchor) show({ text: tooltip, ...anchor })
-  }, [hovered, tooltip, active, show, hide])
 
   return (
-    <div style={{ position: 'relative' }} onLayout={handleLayout}>
+    <div style={{ position: 'relative' }}>
       <Button
         testId={testId}
         disabled={dimmed}
@@ -120,7 +98,7 @@ export function IconButton({
           style={{
             position: 'absolute',
             top: 34,
-            right: 0,
+            left: 0,
             backgroundColor: '#1E1E20',
             borderWidth: 1,
             borderColor: '#2E2E32',
@@ -129,13 +107,7 @@ export function IconButton({
             paddingBottom: 4,
             paddingLeft: 8,
             paddingRight: 8,
-            boxShadow: {
-              offsetX: 0,
-              offsetY: 4,
-              blurRadius: 12,
-              spreadRadius: 0,
-              color: '#00000080',
-            },
+            pointerEvents: 'none',
           }}
         >
           <text

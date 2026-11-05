@@ -13,7 +13,6 @@ import { RequestBuilder } from './src/components/RequestBuilder'
 import { ResponseViewer } from './src/components/ResponseViewer'
 import { EnvironmentManager } from './src/components/EnvironmentManager'
 import { StatusBar } from './src/components/StatusBar'
-import { TooltipProvider } from './src/components/tooltip-layer'
 import { C, FONT_MONO, FONT_SANS, ResizeHandle } from './src/theme'
 import type {
   ClientSettings,
@@ -228,101 +227,101 @@ export function NoddApp() {
   }, [sendRequest, saveCurrentRequest, handleCreateRequest, settingsOpen, envManagerOpen])
 
   return (
-    <TooltipProvider>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          width: '100%',
-          height: '100%',
-          backgroundColor: C.canvas,
-          overflow: 'hidden',
-          position: 'relative',
-        }}
-      >
-        {settingsOpen ? (
-          <Settings
-            settings={settings}
-            onSave={(next) => {
-              setSettings(next)
-              saveSettings(next)
-            }}
-            onClose={() => setSettingsOpen(false)}
-          />
-        ) : envManagerOpen ? (
-          <EnvironmentManager
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        height: '100%',
+        backgroundColor: C.canvas,
+        overflow: 'hidden',
+        position: 'relative',
+      }}
+    >
+      {settingsOpen ? (
+        <Settings
+          settings={settings}
+          onSave={(next) => {
+            setSettings(next)
+            saveSettings(next)
+          }}
+          onClose={() => setSettingsOpen(false)}
+        />
+      ) : envManagerOpen ? (
+        <EnvironmentManager
+          environments={environments}
+          activeEnvironment={activeEnvironment}
+          onSelectEnvironment={(env) => setActiveEnvironment(env)}
+          onSaveEnvironments={(next) => {
+            setEnvironments(next)
+            saveEnvironments(next)
+          }}
+          onClose={() => setEnvManagerOpen(false)}
+        />
+      ) : (
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            width: '100%',
+            height: '100%',
+            overflow: 'hidden',
+          }}
+        >
+          <Titlebar
+            requestName={currentRequest.name}
+            method={currentRequest.method}
+            environment={activeEnvironment}
             environments={environments}
-            activeEnvironment={activeEnvironment}
+            sidebarOpen={sidebarOpen}
+            onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+            settingsOpen={settingsOpen}
+            onOpenSettings={() => setSettingsOpen(true)}
             onSelectEnvironment={(env) => setActiveEnvironment(env)}
-            onSaveEnvironments={(next) => {
-              setEnvironments(next)
-              saveEnvironments(next)
-            }}
-            onClose={() => setEnvManagerOpen(false)}
+            onOpenEnvironmentManager={() => setEnvManagerOpen(true)}
           />
-        ) : (
+
+          {/* Split Body: Sidebar + Main Workbench */}
           <div
             style={{
               display: 'flex',
-              flexDirection: 'column',
+              flexDirection: 'row',
+              flexGrow: 1,
               width: '100%',
-              height: '100%',
               overflow: 'hidden',
+              position: 'relative',
             }}
           >
-            <Titlebar
-              requestName={currentRequest.name}
-              method={currentRequest.method}
-              environment={activeEnvironment}
-              environments={environments}
-              sidebarOpen={sidebarOpen}
-              onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
-              settingsOpen={settingsOpen}
-              onOpenSettings={() => setSettingsOpen(true)}
-              onSelectEnvironment={(env) => setActiveEnvironment(env)}
-              onOpenEnvironmentManager={() => setEnvManagerOpen(true)}
-            />
-
-            {/* Split Body: Sidebar + Main Workbench */}
-            <div
+            {/* Sliding Sidebar Drawer */}
+            <motion.div
+              initial={false}
+              animate={{ width: sidebarOpen ? sidebarWidth : 0 }}
+              transition={{ duration: resizing === 'left' ? 0 : 0.2, ease: 'easeOut' }}
               style={{
                 display: 'flex',
                 flexDirection: 'row',
-                flexGrow: 1,
-                width: '100%',
+                height: '100%',
+                flexShrink: 0,
                 overflow: 'hidden',
                 position: 'relative',
               }}
             >
-              {/* Sliding Sidebar Drawer */}
-              <motion.div
-                initial={false}
-                animate={{ width: sidebarOpen ? sidebarWidth : 0 }}
-                transition={{ duration: resizing === 'left' ? 0 : 0.2, ease: 'easeOut' }}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  height: '100%',
-                  flexShrink: 0,
-                  overflow: 'hidden',
-                  position: 'relative',
-                }}
-              >
-                <div style={{ width: sidebarWidth, height: '100%', display: 'flex', flexShrink: 0 }}>
-                  <Sidebar
-                    collections={collections}
-                    history={history}
-                    activeRequestId={currentRequest.id}
-                    onSelectRequest={(req) => {
-                      setCurrentRequest(req)
-                      setResponse(null)
-                    }}
-                    onCreateRequest={handleCreateRequest}
-                    onCreateCollection={handleCreateCollection}
-                    onDeleteRequest={handleDeleteRequest}
-                    onClearHistory={handleClearHistory}
-                  />
-                </div>
+              <div style={{ width: sidebarWidth, height: '100%', display: 'flex', flexShrink: 0 }}>
+                <Sidebar
+                  collections={collections}
+                  history={history}
+                  activeRequestId={currentRequest.id}
+                  onSelectRequest={(req) => {
+                    setCurrentRequest(req)
+                    setResponse(null)
+                  }}
+                  onCreateRequest={handleCreateRequest}
+                  onCreateCollection={handleCreateCollection}
+                  onDeleteRequest={handleDeleteRequest}
+                  onClearHistory={handleClearHistory}
+                />
+              </div>
+              {sidebarOpen && (
                 <ResizeHandle
                   testId="resize-handle-left"
                   side="left"
@@ -334,76 +333,82 @@ export function NoddApp() {
                     }
                   }}
                 />
-              </motion.div>
+              )}
+            </motion.div>
 
-              {/* Main Workbench Body */}
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  flexGrow: 1,
-                  minWidth: 0,
-                  height: '100%',
-                  overflow: 'hidden',
-                }}
-              >
-                <RequestBuilder
-                  request={currentRequest}
-                  onChange={setCurrentRequest}
-                  onSend={sendRequest}
-                  onSave={saveCurrentRequest}
-                  isLoading={isLoading}
-                />
+            {/* Main Workbench Body */}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                flexGrow: 1,
+                minWidth: 0,
+                height: '100%',
+                overflow: 'hidden',
+              }}
+            >
+              <RequestBuilder
+                request={currentRequest}
+                onChange={setCurrentRequest}
+                onSend={sendRequest}
+                onSave={saveCurrentRequest}
+                isLoading={isLoading}
+              />
 
-                <ResponseViewer
-                  response={response}
-                  isLoading={isLoading}
-                />
-              </div>
+              <ResponseViewer
+                response={response}
+                isLoading={isLoading}
+              />
             </div>
-
-            {/* Bottom Status Bar */}
-            <StatusBar
-              activeEnvironment={activeEnvironment}
-              response={response}
-              isLoading={isLoading}
-              onOpenEnvironmentManager={() => setEnvManagerOpen(true)}
-            />
           </div>
-        )}
 
-        {/* Global Resizing Overlay */}
-        {resizing !== null && (
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              cursor: 'col-resize',
-              backgroundColor: '#00000001',
-            }}
-            onMouseMove={(e: any) => {
-              const currentX = e.x ?? 0
-              if (resizing === 'left') {
-                const newWidth = Math.max(180, Math.min(480, currentX))
-                setSidebarWidth(newWidth)
-              }
-            }}
-            onMouseUp={() => setResizing(null)}
+          {/* Bottom Status Bar */}
+          <StatusBar
+            activeEnvironment={activeEnvironment}
+            response={response}
+            isLoading={isLoading}
+            onOpenEnvironmentManager={() => setEnvManagerOpen(true)}
           />
-        )}
-      </div>
-    </TooltipProvider>
+        </div>
+      )}
+
+      {/* Global Resizing Overlay */}
+      {resizing !== null && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            cursor: 'col-resize',
+            backgroundColor: '#00000001',
+          }}
+          onMouseMove={(e: any) => {
+            const currentX = e.x ?? 0
+            if (resizing === 'left') {
+              const newWidth = Math.max(180, Math.min(480, currentX))
+              setSidebarWidth(newWidth)
+            }
+          }}
+          onMouseUp={() => setResizing(null)}
+        />
+      )}
+    </div>
   )
 }
 
 // Entry point
-applyMacCpuThrottleFromEnv()
-render(<NoddApp />, {
-  title: 'Nodd · Minimalist API Workbench',
-  titlebarTransparent: true,
-  width: 1200,
-  height: 800,
-})
+const isEntryPoint =
+  typeof process !== 'undefined' &&
+  (process.argv[1]?.endsWith('app.tsx') || process.argv[1]?.endsWith('nodd'))
+
+if (isEntryPoint) {
+  applyMacCpuThrottleFromEnv()
+  render(<NoddApp />, {
+    title: 'Nodd · Minimalist API Workbench',
+    titlebarTransparent: true,
+    width: 1200,
+    height: 800,
+  })
+}
