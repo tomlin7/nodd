@@ -1,0 +1,123 @@
+import { describe, expect, test } from 'bun:test'
+import { exportPostmanCollection, importPostmanCollection } from './postman'
+import type { Collection } from './types'
+
+const samplePostmanV2Json = JSON.stringify({
+  info: {
+    name: 'GitHub API Sample',
+    description: 'Sample collection for testing import',
+    schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
+  },
+  item: [
+    {
+      name: 'Get User Profile',
+      request: {
+        method: 'GET',
+        header: [{ key: 'Accept', value: 'application/vnd.github.v3+json' }],
+        url: {
+          raw: 'https://api.github.com/users/octocat?extra=1',
+          query: [{ key: 'extra', value: '1' }],
+        },
+        auth: {
+          type: 'bearer',
+          bearer: [{ key: 'token', value: 'ghp_sample123' }],
+        },
+      },
+    },
+    {
+      name: 'Repositories',
+      item: [
+        {
+          name: 'Create Repo',
+          request: {
+            method: 'POST',
+            header: [{ key: 'Content-Type', value: 'application/json' }],
+            url: 'https://api.github.com/user/repos',
+            body: {
+              mode: 'raw',
+              raw: '{"name": "hello-world", "private": false}',
+            },
+          },
+        },
+      ],
+    },
+  ],
+})
+
+describe('Postman v2.1 Import & Export Engine', () => {
+  test('imports collection with root requests and nested folders', () => {
+    const col = importPostmanCollection(samplePostmanV2Json)
+
+    expect(col.name).toBe('GitHub API Sample')
+    expect(col.description).toBe('Sample collection for testing import')
+    expect(col.requests.length).toBe(1)
+    expect(col.requests[0].name).toBe('Get User Profile')
+    expect(col.requests[0].method).toBe('GET')
+    expect(col.requests[0].url).toBe('https://api.github.com/users/octocat')
+    expect(col.requests[0].auth.type).toBe('bearer')
+    expect(col.requests[0].auth.bearerToken).toBe('ghp_sample123')
+
+    // Folder checks
+    expect(col.folders.length).toBe(1)
+    expect(col.folders[0].name).toBe('Repositories')
+    expect(col.folders[0].requests.length).toBe(1)
+    expect(col.folders[0].requests[0].name).toBe('Create Repo')
+    expect(col.folders[0].requests[0].method).toBe('POST')
+    expect(col.folders[0].requests[0].body.type).toBe('json')
+  })
+
+  test('exports collection to valid Postman v2.1 schema', () => {
+    const sampleCol: Collection = {
+      id: 'col-1',
+      name: 'Nodd Export Test',
+      createdAt: Date.now(),
+      folders: [
+        {
+          id: 'folder-1',
+          name: 'Auth',
+          collectionId: 'col-1',
+          requests: [
+            {
+              id: 'req-1',
+              name: 'Login',
+              method: 'POST',
+              url: 'https://api.example.com/login',
+              params: [],
+              headers: [{ id: 'h1', key: 'Content-Type', value: 'application/json', enabled: true }],
+              body: { type: 'json', rawText: '{"user":"test"}' },
+              auth: { type: 'none' },
+            },
+          ],
+        },
+      ],
+      requests: [
+        {
+          id: 'req-root',
+          name: 'Health Check',
+          method: 'GET',
+          url: 'https://api.example.com/health',
+          params: [{ id: 'p1', key: 'verbose', value: 'true', enabled: true }],
+          headers: [],
+          body: { type: 'none' },
+          auth: { type: 'none' },
+        },
+      ],
+    }
+
+    const exportedJson = exportPostmanCollection(sampleCol)
+    const parsed = JSON.parse(exportedJson)
+
+    expect(parsed.info.name).toBe('Nodd Export Test')
+    expect(parsed.info.schema).toContain('v2.1.0')
+    expect(parsed.item.length).toBe(2) // 1 root request + 1 folder
+    expect(parsed.item[0].name).toBe('Health Check')
+    expect(parsed.item[1].name).toBe('Auth')
+    expect(parsed.item[1].item.length).toBe(1)
+  })
+
+  test('throws descriptive error on malformed JSON', () => {
+    expect(() => importPostmanCollection('invalid json text')).toThrow(
+      'Invalid JSON format: Could not parse Postman collection.'
+    )
+  })
+})
