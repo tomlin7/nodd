@@ -524,6 +524,7 @@ export function NoddApp() {
 
               <ResponseViewer
                 response={response}
+                request={currentRequest}
                 isLoading={isLoading}
               />
             </div>
