@@ -13,6 +13,7 @@ import { RequestBuilder } from './src/components/RequestBuilder'
 import { ResponseViewer } from './src/components/ResponseViewer'
 import { EnvironmentManager } from './src/components/EnvironmentManager'
 import { StatusBar } from './src/components/StatusBar'
+import { CodeSnippetModal } from './src/components/CodeSnippetModal'
 import { C, ResizeHandle } from './src/theme'
 import type {
   ClientSettings,
@@ -52,6 +53,7 @@ export function NoddApp() {
   const [settings, setSettings] = useState<ClientSettings>(loadSettings)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [envManagerOpen, setEnvManagerOpen] = useState(false)
+  const [codeModalOpen, setCodeModalOpen] = useState(false)
 
   // Resizable Sidebar State
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -367,6 +369,12 @@ export function NoddApp() {
             saveSettings(next)
           }}
           onClose={() => setSettingsOpen(false)}
+        />
+      ) : codeModalOpen ? (
+        <CodeSnippetModal
+          request={currentRequest}
+          environment={activeEnvironment}
+          onClose={() => setCodeModalOpen(false)}
         />
       ) : envManagerOpen ? (
         <EnvironmentManager
