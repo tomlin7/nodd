@@ -54,6 +54,14 @@ export interface HttpResponse {
   timestamp: number
 }
 
+export interface WorkspaceTab {
+  id: string
+  request: HttpRequest
+  initialSnapshot: string
+  response: HttpResponse | null
+  isLoading: boolean
+}
+
 export interface Environment {
   id: string
   name: string

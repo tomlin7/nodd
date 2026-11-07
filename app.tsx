@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  AnimatePresence,
   applyMacCpuThrottleFromEnv,
   motion,
   render,
@@ -9,18 +8,19 @@ import {
 import { Titlebar } from './src/components/Titlebar'
 import { Settings } from './src/components/Settings'
 import { Sidebar } from './src/components/Sidebar'
+import { TabBar } from './src/components/TabBar'
 import { RequestBuilder } from './src/components/RequestBuilder'
 import { ResponseViewer } from './src/components/ResponseViewer'
 import { EnvironmentManager } from './src/components/EnvironmentManager'
 import { StatusBar } from './src/components/StatusBar'
-import { C, FONT_MONO, FONT_SANS, ResizeHandle } from './src/theme'
+import { C, ResizeHandle } from './src/theme'
 import type {
   ClientSettings,
   Collection,
   Environment,
   HistoryEntry,
   HttpRequest,
-  HttpResponse,
+  WorkspaceTab,
 } from './src/core/types'
 import { loadCollections, saveCollections } from './src/core/collections'
 import { loadEnvironments, saveEnvironments } from './src/core/environments'
@@ -28,6 +28,7 @@ import { clearHistory, loadHistory, saveHistoryEntry } from './src/core/history'
 import { loadSettings, saveSettings } from './src/core/preferences'
 import { executeRequest } from './src/core/client'
 import { createId } from './src/core/url'
+import { closeTabHelper, createTab, isTabDirty, markTabSaved } from './src/core/tabs'
 
 export function createInitialRequest(collectionId?: string): HttpRequest {
   return {
@@ -67,39 +68,114 @@ export function NoddApp() {
   const [collections, setCollections] = useState<Collection[]>(loadCollections)
   const [history, setHistory] = useState<HistoryEntry[]>(loadHistory)
 
-  const [currentRequest, setCurrentRequest] = useState<HttpRequest>(() => {
+  // Multi-Tab Workspace State
+  const [tabs, setTabs] = useState<WorkspaceTab[]>(() => {
     const cols = loadCollections()
     const firstReq = cols[0]?.folders[0]?.requests[0] ?? cols[0]?.requests[0]
-    return firstReq ?? createInitialRequest()
+    return [createTab(firstReq ?? createInitialRequest())]
   })
+  const [activeTabId, setActiveTabId] = useState<string>(() => tabs[0]?.id ?? 'tab-1')
 
-  const [response, setResponse] = useState<HttpResponse | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const activeTab = tabs.find((t) => t.id === activeTabId) ?? tabs[0]
+  const currentRequest = activeTab?.request ?? createInitialRequest()
+  const response = activeTab?.response ?? null
+  const isLoading = activeTab?.isLoading ?? false
+
+  const handleSelectTab = useCallback((tabId: string) => {
+    setActiveTabId(tabId)
+  }, [])
+
+  const handleNewTab = useCallback((req?: HttpRequest) => {
+    const newReq = req ?? createInitialRequest()
+    const newTab = createTab(newReq)
+    setTabs((prev) => [...prev, newTab])
+    setActiveTabId(newTab.id)
+  }, [])
+
+  const handleCloseTab = useCallback(
+    (tabId: string) => {
+      setTabs((prev) => {
+        const next = closeTabHelper(prev, activeTabId, tabId, () => createInitialRequest())
+        setActiveTabId(next.activeTabId)
+        return next.tabs
+      })
+    },
+    [activeTabId]
+  )
+
+  const handleRequestChange = useCallback(
+    (nextReq: HttpRequest) => {
+      setTabs((prev) =>
+        prev.map((t) => (t.id === activeTabId ? { ...t, request: nextReq } : t))
+      )
+    },
+    [activeTabId]
+  )
+
+  const handleSelectRequest = useCallback(
+    (req: HttpRequest) => {
+      // 1. Check if request is already open in a tab
+      const existingTab = tabs.find((t) => t.request.id === req.id)
+      if (existingTab) {
+        setActiveTabId(existingTab.id)
+        return
+      }
+
+      // 2. If current tab is clean & blank, replace it
+      if (
+        !isTabDirty(activeTab) &&
+        activeTab.request.name === 'New Request' &&
+        activeTab.response === null
+      ) {
+        setTabs((prev) =>
+          prev.map((t) => (t.id === activeTabId ? createTab(req, null, t.id) : t))
+        )
+        return
+      }
+
+      // 3. Otherwise open in a new tab
+      const newTab = createTab(req)
+      setTabs((prev) => [...prev, newTab])
+      setActiveTabId(newTab.id)
+    },
+    [tabs, activeTab, activeTabId]
+  )
 
   const sendRequest = useCallback(async () => {
     if (isLoading) return
-    setIsLoading(true)
+    const targetTabId = activeTabId
+    const targetRequest = currentRequest
+
+    setTabs((prev) =>
+      prev.map((t) => (t.id === targetTabId ? { ...t, isLoading: true } : t))
+    )
+
     try {
-      const res = await executeRequest(currentRequest, {
+      const res = await executeRequest(targetRequest, {
         environment: activeEnvironment,
         timeoutMs: settings.timeoutMs,
         followRedirects: settings.followRedirects,
         validateSsl: settings.validateSsl,
       })
-      setResponse(res)
+
+      setTabs((prev) =>
+        prev.map((t) => (t.id === targetTabId ? { ...t, response: res } : t))
+      )
 
       const entry: HistoryEntry = {
         id: createId('hist'),
-        request: { ...currentRequest },
+        request: { ...targetRequest },
         response: res,
         timestamp: Date.now(),
       }
       saveHistoryEntry(entry)
       setHistory(loadHistory())
     } finally {
-      setIsLoading(false)
+      setTabs((prev) =>
+        prev.map((t) => (t.id === targetTabId ? { ...t, isLoading: false } : t))
+      )
     }
-  }, [currentRequest, activeEnvironment, settings, isLoading])
+  }, [isLoading, activeTabId, currentRequest, activeEnvironment, settings])
 
   const saveCurrentRequest = useCallback(() => {
     const cols = [...collections]
@@ -130,19 +206,26 @@ export function NoddApp() {
 
     setCollections(cols)
     saveCollections(cols)
-  }, [collections, currentRequest])
 
-  const handleCreateRequest = useCallback((collectionId?: string) => {
-    const newReq = createInitialRequest(collectionId)
-    const cols = [...collections]
-    if (cols.length > 0) {
-      cols[0].requests.push(newReq)
-      setCollections(cols)
-      saveCollections(cols)
-    }
-    setCurrentRequest(newReq)
-    setResponse(null)
-  }, [collections])
+    // Mark current tab as saved (clears dirty dot)
+    setTabs((prev) =>
+      prev.map((t) => (t.id === activeTabId ? markTabSaved(t) : t))
+    )
+  }, [collections, currentRequest, activeTabId])
+
+  const handleCreateRequest = useCallback(
+    (collectionId?: string) => {
+      const newReq = createInitialRequest(collectionId)
+      const cols = [...collections]
+      if (cols.length > 0) {
+        cols[0].requests.push(newReq)
+        setCollections(cols)
+        saveCollections(cols)
+      }
+      handleNewTab(newReq)
+    },
+    [collections, handleNewTab]
+  )
 
   const handleCreateCollection = () => {
     const newCol: Collection = {
@@ -195,6 +278,35 @@ export function NoddApp() {
         return
       }
 
+      // New tab: Ctrl+T / Cmd+T
+      if (isCtrl && key === 't') {
+        e.preventDefault?.()
+        handleNewTab()
+        return
+      }
+
+      // Close tab: Ctrl+W / Cmd+W
+      if (isCtrl && key === 'w') {
+        e.preventDefault?.()
+        handleCloseTab(activeTabId)
+        return
+      }
+
+      // Switch tabs: Ctrl+Tab or Ctrl+Shift+Tab
+      if (isCtrl && key === 'tab') {
+        e.preventDefault?.()
+        setTabs((currentTabs) => {
+          if (currentTabs.length <= 1) return currentTabs
+          const idx = currentTabs.findIndex((t) => t.id === activeTabId)
+          if (idx === -1) return currentTabs
+          const delta = e.shiftKey ? -1 : 1
+          const nextIdx = (idx + delta + currentTabs.length) % currentTabs.length
+          setActiveTabId(currentTabs[nextIdx].id)
+          return currentTabs
+        })
+        return
+      }
+
       // New request: Ctrl+N / Cmd+N
       if (isCtrl && key === 'n') {
         e.preventDefault?.()
@@ -224,7 +336,16 @@ export function NoddApp() {
       window.addEventListener('keydown', handleKeyDown)
       return () => window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [sendRequest, saveCurrentRequest, handleCreateRequest, settingsOpen, envManagerOpen])
+  }, [
+    sendRequest,
+    saveCurrentRequest,
+    handleNewTab,
+    handleCloseTab,
+    handleCreateRequest,
+    activeTabId,
+    settingsOpen,
+    envManagerOpen,
+  ])
 
   return (
     <div
@@ -311,10 +432,7 @@ export function NoddApp() {
                   collections={collections}
                   history={history}
                   activeRequestId={currentRequest.id}
-                  onSelectRequest={(req) => {
-                    setCurrentRequest(req)
-                    setResponse(null)
-                  }}
+                  onSelectRequest={handleSelectRequest}
                   onCreateRequest={handleCreateRequest}
                   onCreateCollection={handleCreateCollection}
                   onDeleteRequest={handleDeleteRequest}
@@ -336,7 +454,7 @@ export function NoddApp() {
               )}
             </motion.div>
 
-            {/* Main Workbench Body */}
+            {/* Main Workbench Body with TabBar */}
             <div
               style={{
                 display: 'flex',
@@ -347,9 +465,17 @@ export function NoddApp() {
                 overflow: 'hidden',
               }}
             >
+              <TabBar
+                tabs={tabs}
+                activeTabId={activeTabId}
+                onSelectTab={handleSelectTab}
+                onCloseTab={handleCloseTab}
+                onNewTab={() => handleNewTab()}
+              />
+
               <RequestBuilder
                 request={currentRequest}
-                onChange={setCurrentRequest}
+                onChange={handleRequestChange}
                 onSend={sendRequest}
                 onSave={saveCurrentRequest}
                 isLoading={isLoading}
