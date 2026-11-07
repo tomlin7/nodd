@@ -2,7 +2,8 @@ import React, { useMemo, useState } from 'react'
 import { Button } from '@gpuix/react'
 import { Icon } from './Icons'
 import { C, FONT_MONO, FONT_SANS } from '../theme'
-import type { HttpResponse } from '../core/types'
+import type { HttpRequest, HttpResponse } from '../core/types'
+import { runAssertions } from '../core/tests'
 
 export function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B'
@@ -20,15 +21,24 @@ export function getStatusColor(status: number): string {
 
 export function ResponseViewer({
   response,
+  request,
   isLoading,
 }: {
   response: HttpResponse | null
+  request?: HttpRequest
   isLoading?: boolean
 }) {
-  const [activeTab, setActiveTab] = useState<'body' | 'headers'>('body')
+  const [activeTab, setActiveTab] = useState<'body' | 'headers' | 'tests'>('body')
   const [viewMode, setViewMode] = useState<'pretty' | 'raw'>('pretty')
   const [copied, setCopied] = useState(false)
   const [filterQuery, setFilterQuery] = useState('')
+
+  // Test results evaluation
+  const testResults = useMemo(() => {
+    return runAssertions(request?.assertions, response)
+  }, [request?.assertions, response])
+
+  const passedTestsCount = testResults.filter((r) => r.passed).length
 
   // Formatted JSON lines
   const { formattedBody, isJson } = useMemo(() => {
@@ -335,6 +345,45 @@ export function ResponseViewer({
                 Body
               </text>
             </Button>
+            {testResults.length > 0 && (
+              <Button
+                testId="response-tab-tests"
+                onClick={() => setActiveTab('tests')}
+                style={{
+                  height: 28,
+                  paddingLeft: 10,
+                  paddingRight: 10,
+                  borderRadius: 6,
+                  backgroundColor: activeTab === 'tests' ? C.surfaceHighlight : 'transparent',
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                  cursor: 'pointer',
+                }}
+              >
+                <div
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: 3,
+                    backgroundColor: passedTestsCount === testResults.length ? C.success : C.error,
+                  }}
+                />
+                <text
+                  style={{
+                    fontSize: 12.5,
+                    fontFamily: FONT_SANS,
+                    fontWeight: activeTab === 'tests' ? '600' : '500',
+                    color: activeTab === 'tests' ? C.text : C.secondary,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {`Tests (${passedTestsCount}/${testResults.length})`}
+                </text>
+              </Button>
+            )}
+
             <Button
               testId="response-tab-headers"
               onClick={() => setActiveTab('headers')}
@@ -523,6 +572,85 @@ export function ResponseViewer({
                 ))
               )}
             </div>
+          </div>
+        )}
+
+        {activeTab === 'tests' && (
+          <div
+            testId="response-tests-pane"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              flexGrow: 1,
+              padding: 16,
+              gap: 8,
+              overflow: 'hidden',
+              backgroundColor: '#101012',
+            }}
+          >
+            {testResults.map((r, idx) => (
+              <div
+                key={idx}
+                testId={`test-result-${idx}`}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  paddingLeft: 12,
+                  paddingRight: 12,
+                  height: 38,
+                  borderRadius: 6,
+                  backgroundColor: '#16161A',
+                }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <div
+                    style={{
+                      paddingLeft: 8,
+                      paddingRight: 8,
+                      paddingTop: 2,
+                      paddingBottom: 2,
+                      borderRadius: 4,
+                      backgroundColor: r.passed ? '#143823' : '#38161A',
+                    }}
+                  >
+                    <text
+                      style={{
+                        fontSize: 11,
+                        fontFamily: FONT_SANS,
+                        fontWeight: '700',
+                        color: r.passed ? C.success : C.error,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {r.passed ? 'PASS' : 'FAIL'}
+                    </text>
+                  </div>
+                  <text
+                    style={{
+                      fontSize: 13,
+                      fontFamily: FONT_SANS,
+                      color: C.text,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {r.message}
+                  </text>
+                </div>
+
+                <text
+                  style={{
+                    fontSize: 12,
+                    fontFamily: FONT_MONO,
+                    color: C.tertiary,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {`Actual: ${r.actual}`}
+                </text>
+              </div>
+            ))}
           </div>
         )}
 

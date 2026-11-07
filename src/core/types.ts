@@ -28,6 +28,26 @@ export interface BodyConfig {
   formParams?: KeyValuePair[]
 }
 
+export type AssertionType =
+  | 'status_code'
+  | 'response_time'
+  | 'body_contains'
+  | 'json_path_exists'
+
+export interface RequestAssertion {
+  id: string
+  type: AssertionType
+  expected: string
+  enabled: boolean
+}
+
+export interface AssertionResult {
+  assertion: RequestAssertion
+  passed: boolean
+  message: string
+  actual: string
+}
+
 export interface HttpRequest {
   id: string
   name: string
@@ -37,6 +57,7 @@ export interface HttpRequest {
   headers: KeyValuePair[]
   body: BodyConfig
   auth: AuthConfig
+  assertions?: RequestAssertion[]
   collectionId?: string
   folderId?: string
   createdAt?: number

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { formatBytes, getStatusColor } from './ResponseViewer'
 import { C } from '../theme'
+import { createAssertion, runAssertions } from '../core/tests'
+import type { HttpResponse } from '../core/types'
 
 describe('ResponseViewer Logic and Helpers', () => {
   it('formats byte sizes cleanly', () => {
@@ -26,5 +28,24 @@ describe('ResponseViewer Logic and Helpers', () => {
     const formatted = JSON.stringify(parsed, null, 2)
     expect(formatted).toContain('  "status": "ok"')
     expect(formatted).toContain('  "count": 42')
+  })
+
+  it('evaluates assertions and calculates pass rates', () => {
+    const res: HttpResponse = {
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      body: '{"message": "pong"}',
+      sizeBytes: 20,
+      timeMs: 80,
+      timestamp: Date.now(),
+    }
+    const assertions = [
+      createAssertion('status_code', '200'),
+      createAssertion('response_time', '100'),
+    ]
+    const results = runAssertions(assertions, res)
+    expect(results.length).toBe(2)
+    expect(results.every((r) => r.passed)).toBe(true)
   })
 })

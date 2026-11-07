@@ -3,12 +3,13 @@ import { Button } from '@gpuix/react'
 import { Icon } from './Icons'
 import { KeyValueTable } from './KeyValueTable'
 import { C, FONT_MONO, FONT_SANS } from '../theme'
-import type { AuthType, BodyType, HttpMethod, HttpRequest, KeyValuePair } from '../core/types'
+import type { AssertionType, AuthType, BodyType, HttpMethod, HttpRequest, KeyValuePair, RequestAssertion } from '../core/types'
+import { createAssertion, formatAssertionLabel } from '../core/tests'
 import { buildUrlWithParams, parseUrlParams } from '../core/url'
 import { parseCurlCommand } from '../core/curl'
 
 const METHODS: HttpMethod[] = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS']
-type ActiveTab = 'params' | 'headers' | 'auth' | 'body'
+type ActiveTab = 'params' | 'headers' | 'auth' | 'body' | 'tests'
 
 export function RequestBuilder({
   request,
@@ -368,10 +369,24 @@ export function RequestBuilder({
           testId="tab-body"
           onClick={() => setActiveTab('body')}
         />
+        <TabButton
+          label="Tests"
+          count={request.assertions?.filter((a) => a.enabled).length}
+          active={activeTab === 'tests'}
+          testId="tab-tests"
+          onClick={() => setActiveTab('tests')}
+        />
       </div>
 
       {/* Tab Panes */}
       <div style={{ marginTop: 6, width: '100%' }}>
+        {activeTab === 'tests' && (
+          <TestsPane
+            assertions={request.assertions}
+            onChange={(next) => onChange({ ...request, assertions: next })}
+          />
+        )}
+
         {activeTab === 'params' && (
           <KeyValueTable
             pairs={request.params}
@@ -824,6 +839,159 @@ function BodyPane({
           valuePlaceholder="Value"
           emptyLabel="No form fields defined"
         />
+      )}
+    </div>
+  )
+}
+
+
+function TestsPane({
+  assertions,
+  onChange,
+}: {
+  assertions?: RequestAssertion[]
+  onChange: (next: RequestAssertion[]) => void
+}) {
+  const current = assertions ?? []
+
+  const handleAdd = (type: AssertionType, defaultExpected: string) => {
+    const next = [...current, createAssertion(type, defaultExpected)]
+    onChange(next)
+  }
+
+  const handleToggle = (id: string) => {
+    onChange(current.map((a) => (a.id === id ? { ...a, enabled: !a.enabled } : a)))
+  }
+
+  const handleUpdate = (id: string, expected: string) => {
+    onChange(current.map((a) => (a.id === id ? { ...a, expected } : a)))
+  }
+
+  const handleDelete = (id: string) => {
+    onChange(current.filter((a) => a.id !== id))
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {/* Quick Assertion Templates */}
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+        <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
+          Snippets:
+        </text>
+        <PresetButton label="Status is 200" onClick={() => handleAdd('status_code', '200')} />
+        <PresetButton label="Status is 201" onClick={() => handleAdd('status_code', '201')} />
+        <PresetButton label="Time <= 500ms" onClick={() => handleAdd('response_time', '500')} />
+        <PresetButton label="Body contains string" onClick={() => handleAdd('body_contains', 'success')} />
+        <PresetButton label="JSON has key" onClick={() => handleAdd('json_path_exists', 'id')} />
+      </div>
+
+      {/* Assertions Table / List */}
+      {current.length === 0 ? (
+        <div style={{ padding: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <text style={{ fontSize: 13, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
+            No tests defined. Click a snippet above to add response assertions.
+          </text>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {current.map((a) => (
+            <div
+              key={a.id}
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 8,
+                height: 36,
+                paddingLeft: 10,
+                paddingRight: 10,
+                borderRadius: 6,
+                backgroundColor: C.surface,
+              }}
+            >
+              {/* Checkbox */}
+              <Button
+                testId={`assert-toggle-${a.id}`}
+                onClick={() => handleToggle(a.id)}
+                style={{
+                  width: 18,
+                  height: 18,
+                  borderRadius: 3,
+                  backgroundColor: a.enabled ? C.accent : 'transparent',
+                  borderWidth: 1,
+                  borderColor: a.enabled ? C.accent : C.tertiary,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                }}
+              >
+                {a.enabled && <Icon name="check" size={10} color="#FFFFFF" />}
+              </Button>
+
+              {/* Label */}
+              <text
+                style={{
+                  fontSize: 12.5,
+                  fontFamily: FONT_SANS,
+                  color: a.enabled ? C.text : C.tertiary,
+                  whiteSpace: 'nowrap',
+                  width: 160,
+                }}
+              >
+                {formatAssertionLabel(a.type)}
+              </text>
+
+              {/* Expected Value Input */}
+              <div
+                style={{
+                  flexGrow: 1,
+                  height: 28,
+                  borderRadius: 4,
+                  backgroundColor: '#131316',
+                  display: 'flex',
+                  alignItems: 'center',
+                  paddingLeft: 8,
+                  paddingRight: 8,
+                }}
+              >
+                <input
+                  testId={`assert-val-${a.id}`}
+                  value={a.expected}
+                  theme={{ text: C.text, textMuted: C.secondary, textFaint: C.tertiary }}
+                  style={{
+                    width: '100%',
+                    fontSize: 12,
+                    fontFamily: FONT_MONO,
+                    color: a.enabled ? C.text : C.secondary,
+                    backgroundColor: 'transparent',
+                    borderWidth: 0,
+                    padding: 0,
+                  }}
+                  onChange={(e) => handleUpdate(a.id, e.value ?? '')}
+                />
+              </div>
+
+              {/* Delete button */}
+              <Button
+                testId={`assert-delete-${a.id}`}
+                onClick={() => handleDelete(a.id)}
+                style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: 4,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  hover: { backgroundColor: C.overlayStrong },
+                }}
+              >
+                <Icon name="trash" size={11} color={C.tertiary} />
+              </Button>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   )
