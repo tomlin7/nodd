@@ -14,6 +14,8 @@ import { ResponseViewer } from './src/components/ResponseViewer'
 import { EnvironmentManager } from './src/components/EnvironmentManager'
 import { StatusBar } from './src/components/StatusBar'
 import { CodeSnippetModal } from './src/components/CodeSnippetModal'
+import { ImportModal } from './src/components/ImportModal'
+import { exportPostmanCollection } from './src/core/postman'
 import { C, ResizeHandle } from './src/theme'
 import type {
   ClientSettings,
@@ -54,6 +56,7 @@ export function NoddApp() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [envManagerOpen, setEnvManagerOpen] = useState(false)
   const [codeModalOpen, setCodeModalOpen] = useState(false)
+  const [importModalOpen, setImportModalOpen] = useState(false)
 
   // Resizable Sidebar State
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -229,6 +232,29 @@ export function NoddApp() {
     [collections, handleNewTab]
   )
 
+  const handleImportCollection = useCallback((col: Collection) => {
+    setCollections((prev) => {
+      const updated = [...prev, col]
+      saveCollections(updated)
+      return updated
+    })
+    const firstReq = col.folders[0]?.requests[0] ?? col.requests[0]
+    if (firstReq) {
+      handleNewTab(firstReq)
+    }
+  }, [handleNewTab])
+
+  const handleExportCollection = useCallback((col: Collection) => {
+    try {
+      const json = exportPostmanCollection(col)
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        navigator.clipboard.writeText(json)
+      }
+    } catch (e) {
+      console.error('Failed to export collection', e)
+    }
+  }, [])
+
   const handleCreateCollection = () => {
     const newCol: Collection = {
       id: createId('col'),
@@ -376,6 +402,11 @@ export function NoddApp() {
           environment={activeEnvironment}
           onClose={() => setCodeModalOpen(false)}
         />
+      ) : importModalOpen ? (
+        <ImportModal
+          onImport={handleImportCollection}
+          onClose={() => setImportModalOpen(false)}
+        />
       ) : envManagerOpen ? (
         <EnvironmentManager
           environments={environments}
@@ -445,6 +476,8 @@ export function NoddApp() {
                   onCreateCollection={handleCreateCollection}
                   onDeleteRequest={handleDeleteRequest}
                   onClearHistory={handleClearHistory}
+                  onImportCollection={() => setImportModalOpen(true)}
+                  onExportCollection={handleExportCollection}
                 />
               </div>
               {sidebarOpen && (

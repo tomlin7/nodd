@@ -13,6 +13,8 @@ export function Sidebar({
   onCreateCollection,
   onDeleteRequest,
   onClearHistory,
+  onImportCollection,
+  onExportCollection,
 }: {
   collections: Collection[]
   history: HistoryEntry[]
@@ -22,6 +24,8 @@ export function Sidebar({
   onCreateCollection: () => void
   onDeleteRequest: (requestId: string) => void
   onClearHistory: () => void
+  onImportCollection?: () => void
+  onExportCollection?: (col: Collection) => void
 }) {
   const [activeTab, setActiveTab] = useState<'collections' | 'history'>('collections')
   const [searchQuery, setSearchQuery] = useState('')
@@ -157,8 +161,38 @@ export function Sidebar({
         </div>
 
         {activeTab === 'collections' ? (
-          <Button
-            testId="new-collection-btn"
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            {onImportCollection && (
+              <Button
+                testId="import-collection-btn"
+                onClick={onImportCollection}
+                style={{
+                  height: 26,
+                  paddingLeft: 7,
+                  paddingRight: 7,
+                  borderRadius: 5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  cursor: 'pointer',
+                  hover: { backgroundColor: C.overlay },
+                }}
+              >
+                <Icon name="bolt" size={11} color={C.secondary} />
+                <text
+                  style={{
+                    fontSize: 11.5,
+                    fontFamily: FONT_SANS,
+                    color: C.secondary,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Import
+                </text>
+              </Button>
+            )}
+            <Button
+              testId="new-collection-btn"
             onClick={onCreateCollection}
             style={{
               width: 26,
@@ -172,7 +206,8 @@ export function Sidebar({
             }}
           >
             <Icon name="plus" size={13} color={C.secondary} />
-          </Button>
+            </Button>
+          </div>
         ) : (
           <Button
             testId="clear-history-btn"
@@ -293,6 +328,28 @@ export function Sidebar({
                     >
                       {col.name}
                     </text>
+                    {onExportCollection && (
+                      <Button
+                        testId={`export-col-${col.id}`}
+                        onClick={(e: any) => {
+                          e?.stopPropagation?.()
+                          onExportCollection(col)
+                        }}
+                        style={{
+                          width: 22,
+                          height: 22,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: 4,
+                          backgroundColor: 'transparent',
+                          cursor: 'pointer',
+                          hover: { backgroundColor: C.overlayStrong },
+                        }}
+                      >
+                        <Icon name="copy" size={11} color={C.tertiary} />
+                      </Button>
+                    )}
                   </Button>
 
                   {/* Folders & Direct Requests */}
