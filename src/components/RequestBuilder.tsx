@@ -5,6 +5,7 @@ import { KeyValueTable } from './KeyValueTable'
 import { C, FONT_MONO, FONT_SANS } from '../theme'
 import type { AuthType, BodyType, HttpMethod, HttpRequest, KeyValuePair } from '../core/types'
 import { buildUrlWithParams, parseUrlParams } from '../core/url'
+import { parseCurlCommand } from '../core/curl'
 
 const METHODS: HttpMethod[] = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS']
 type ActiveTab = 'params' | 'headers' | 'auth' | 'body'
@@ -15,12 +16,14 @@ export function RequestBuilder({
   onSend,
   onSave,
   isLoading,
+  onOpenCodeSnippets,
 }: {
   request: HttpRequest
   onChange: (next: HttpRequest) => void
   onSend: () => void
   onSave: () => void
   isLoading?: boolean
+  onOpenCodeSnippets?: () => void
 }) {
   const [activeTab, setActiveTab] = useState<ActiveTab>('params')
   const [methodMenuOpen, setMethodMenuOpen] = useState(false)
@@ -30,6 +33,17 @@ export function RequestBuilder({
 
   // URL Input Handler (syncs query params to request.params)
   const handleUrlChange = (newUrl: string) => {
+    if (newUrl.trim().toLowerCase().startsWith('curl')) {
+      const parsed = parseCurlCommand(newUrl)
+      if (parsed) {
+        onChange({
+          ...request,
+          ...parsed,
+          name: request.name === 'New Request' ? 'Imported cURL' : request.name,
+        })
+        return
+      }
+    }
     if (newUrl.includes('?')) {
       const { params } = parseUrlParams(newUrl)
       onChange({
@@ -251,6 +265,39 @@ export function RequestBuilder({
             {isLoading ? 'Sending…' : 'Send'}
           </text>
         </Button>
+
+        {/* Code Snippets Button */}
+        {onOpenCodeSnippets && (
+          <Button
+            testId="open-code-snippets-button"
+            onClick={onOpenCodeSnippets}
+            style={{
+              height: 38,
+              paddingLeft: 12,
+              paddingRight: 12,
+              borderRadius: 8,
+              backgroundColor: C.surface,
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+              cursor: 'pointer',
+              hover: { backgroundColor: C.surfaceHighlight },
+            }}
+          >
+            <Icon name="code" size={13} color={C.secondary} />
+            <text
+              style={{
+                fontSize: 13,
+                fontFamily: FONT_SANS,
+                color: C.secondary,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Code
+            </text>
+          </Button>
+        )}
 
         {/* Save Button */}
         <Button

@@ -1,0 +1,104 @@
+import { describe, expect, test } from 'bun:test'
+import {
+  generateCurlSnippet,
+  generateFetchSnippet,
+  generatePythonSnippet,
+  parseCurlCommand,
+  tokenizeCurl,
+} from './curl'
+import type { HttpRequest } from './types'
+
+describe('cURL Parser & Snippet Generator', () => {
+  test('tokenizes curl arguments with single and double quotes', () => {
+    const cmd = `curl -X POST "https://api.example.com/users" -H 'Authorization: Bearer xyz' -d '{"name": "Alice"}'`
+    const tokens = tokenizeCurl(cmd)
+    expect(tokens[0]).toBe('curl')
+    expect(tokens[1]).toBe('-X')
+    expect(tokens[2]).toBe('POST')
+    expect(tokens[3]).toBe('https://api.example.com/users')
+    expect(tokens[4]).toBe('-H')
+    expect(tokens[5]).toBe('Authorization: Bearer xyz')
+    expect(tokens[6]).toBe('-d')
+    expect(tokens[7]).toBe('{"name": "Alice"}')
+  })
+
+  test('parses standard curl command into HttpRequest object', () => {
+    const cmd = `curl -X POST "https://api.example.com/items?limit=10" -H "Content-Type: application/json" -H "X-Trace-Id: 999" -d '{"title": "Widget"}'`
+    const parsed = parseCurlCommand(cmd)
+
+    expect(parsed).not.toBeNull()
+    expect(parsed?.method).toBe('POST')
+    expect(parsed?.url).toBe('https://api.example.com/items')
+    expect(parsed?.params?.length).toBe(1)
+    expect(parsed?.params?.[0].key).toBe('limit')
+    expect(parsed?.params?.[0].value).toBe('10')
+    expect(parsed?.headers?.length).toBe(2)
+    expect(parsed?.body?.type).toBe('json')
+    expect(parsed?.body?.rawText).toBe('{"title": "Widget"}')
+  })
+
+  test('parses curl with bearer auth header cleanly into authConfig', () => {
+    const cmd = `curl -X GET "https://api.example.com/profile" -H "Authorization: Bearer secret-token-123"`
+    const parsed = parseCurlCommand(cmd)
+
+    expect(parsed).not.toBeNull()
+    expect(parsed?.method).toBe('GET')
+    expect(parsed?.auth?.type).toBe('bearer')
+    expect(parsed?.auth?.bearerToken).toBe('secret-token-123')
+  })
+
+  test('generates valid curl snippet from HttpRequest', () => {
+    const req: HttpRequest = {
+      id: 'test',
+      name: 'Test',
+      method: 'POST',
+      url: 'https://api.example.com/posts',
+      params: [{ id: 'p1', key: 'sort', value: 'desc', enabled: true }],
+      headers: [{ id: 'h1', key: 'Accept', value: 'application/json', enabled: true }],
+      body: { type: 'json', rawText: '{"foo":"bar"}' },
+      auth: { type: 'none' },
+    }
+
+    const snippet = generateCurlSnippet(req)
+    expect(snippet).toContain('curl -X POST "https://api.example.com/posts?sort=desc"')
+    expect(snippet).toContain('-H "Accept: application/json"')
+    expect(snippet).toContain(`-d '{"foo":"bar"}'`)
+  })
+
+  test('generates valid JavaScript fetch snippet', () => {
+    const req: HttpRequest = {
+      id: 'test',
+      name: 'Test',
+      method: 'GET',
+      url: 'https://api.example.com/data',
+      params: [],
+      headers: [{ id: 'h1', key: 'X-Key', value: '123', enabled: true }],
+      body: { type: 'none' },
+      auth: { type: 'none' },
+    }
+
+    const snippet = generateFetchSnippet(req)
+    expect(snippet).toContain('fetch("https://api.example.com/data"')
+    expect(snippet).toContain('"method": "GET"')
+    expect(snippet).toContain('"X-Key": "123"')
+  })
+
+  test('generates valid Python requests snippet', () => {
+    const req: HttpRequest = {
+      id: 'test',
+      name: 'Test',
+      method: 'GET',
+      url: 'https://api.example.com/data',
+      params: [{ id: 'p1', key: 'page', value: '2', enabled: true }],
+      headers: [],
+      body: { type: 'none' },
+      auth: { type: 'none' },
+    }
+
+    const snippet = generatePythonSnippet(req)
+    expect(snippet).toContain('import requests')
+    expect(snippet).toContain('url = "https://api.example.com/data"')
+    expect(snippet).toContain('params =')
+    expect(snippet).toContain('requests.get(')
+  })
+})
