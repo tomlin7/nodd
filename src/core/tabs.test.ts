@@ -68,7 +68,7 @@ describe('Workspace Tab Logic', () => {
     const t2 = createTab(makeTestRequest('r2', 'Req 2'), null, 'tab-2')
     const t3 = createTab(makeTestRequest('r3', 'Req 3'), null, 'tab-3')
 
-    const res = closeTabHelper([t1, t2, t3], 'tab-1', 'tab-2', () => makeTestRequest('new', 'New'))
+    const res = closeTabHelper([t1, t2, t3], 'tab-1', 'tab-2')
     expect(res.tabs.length).toBe(2)
     expect(res.tabs.map((t) => t.id)).toEqual(['tab-1', 'tab-3'])
     expect(res.activeTabId).toBe('tab-1')
@@ -80,22 +80,21 @@ describe('Workspace Tab Logic', () => {
     const t3 = createTab(makeTestRequest('r3', 'Req 3'), null, 'tab-3')
 
     // Close t2 when t2 is active -> should switch to t3
-    const res = closeTabHelper([t1, t2, t3], 'tab-2', 'tab-2', () => makeTestRequest('new', 'New'))
+    const res = closeTabHelper([t1, t2, t3], 'tab-2', 'tab-2')
     expect(res.tabs.length).toBe(2)
     expect(res.activeTabId).toBe('tab-3')
 
     // Close t3 when t3 is active -> should switch back to t1
-    const res2 = closeTabHelper(res.tabs, 'tab-3', 'tab-3', () => makeTestRequest('new', 'New'))
+    const res2 = closeTabHelper(res.tabs, 'tab-3', 'tab-3')
     expect(res2.tabs.length).toBe(1)
     expect(res2.activeTabId).toBe('tab-1')
   })
 
-  test('closeTabHelper creates fallback tab when closing the last remaining tab', () => {
+  test('closeTabHelper returns empty tabs when closing the last remaining tab', () => {
     const t1 = createTab(makeTestRequest('r1', 'Req 1'), null, 'tab-1')
-    const res = closeTabHelper([t1], 'tab-1', 'tab-1', () => makeTestRequest('fallback', 'Fallback'))
+    const res = closeTabHelper([t1], 'tab-1', 'tab-1')
 
-    expect(res.tabs.length).toBe(1)
-    expect(res.tabs[0].request.name).toBe('Fallback')
-    expect(res.activeTabId).toBe(res.tabs[0].id)
+    expect(res.tabs.length).toBe(0)
+    expect(res.activeTabId).toBe('')
   })
 })

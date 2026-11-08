@@ -46,7 +46,14 @@ export function TabBar({
           overflow: 'hidden',
         }}
       >
-        {tabs.map((tab) => {
+        {tabs.length === 0 ? (
+          <div style={{ paddingLeft: 14 }}>
+            <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.ghost, whiteSpace: 'nowrap' }}>
+              No open tabs
+            </text>
+          </div>
+        ) : (
+          tabs.map((tab) => {
           const isActive = tab.id === activeTabId
           const dirty = isTabDirty(tab)
           const method = tab.request.method || 'GET'
@@ -158,7 +165,7 @@ export function TabBar({
               </Button>
             </div>
           )
-        })}
+        }))}
       </div>
 
       {/* New Tab Button */}

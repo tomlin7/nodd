@@ -41,12 +41,14 @@ export function markTabSaved(tab: WorkspaceTab): WorkspaceTab {
 export function closeTabHelper(
   tabs: WorkspaceTab[],
   activeTabId: string,
-  tabIdToClose: string,
-  createFallbackRequest: () => HttpRequest
+  tabIdToClose: string
 ): { tabs: WorkspaceTab[]; activeTabId: string } {
-  if (tabs.length <= 1) {
-    const fallbackTab = createTab(createFallbackRequest())
-    return { tabs: [fallbackTab], activeTabId: fallbackTab.id }
+  if (tabs.length === 0) {
+    return { tabs: [], activeTabId: '' }
+  }
+
+  if (tabs.length === 1 && tabs[0]?.id === tabIdToClose) {
+    return { tabs: [], activeTabId: '' }
   }
 
   const closeIdx = tabs.findIndex((t) => t.id === tabIdToClose)
@@ -59,7 +61,7 @@ export function closeTabHelper(
 
   if (activeTabId === tabIdToClose) {
     const nextIdx = Math.min(closeIdx, nextTabs.length - 1)
-    nextActiveId = nextTabs[nextIdx].id
+    nextActiveId = nextTabs[nextIdx]?.id ?? ''
   }
 
   return { tabs: nextTabs, activeTabId: nextActiveId }
