@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { Button } from '@gpuix/react'
+import { AnimatePresence, Button, motion } from '@gpuix/react'
 import { Icon } from './Icons'
 import { C, FONT_MONO, FONT_SANS } from '../theme'
 import type { HttpRequest, HttpResponse } from '../core/types'
@@ -505,8 +505,26 @@ export function ResponseViewer({
           minHeight: 0,
           overflow: 'hidden',
           padding: 16,
+          position: 'relative',
         }}
       >
+        <AnimatePresence initial={false}>
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.12, ease: 'easeOut' }}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              flexGrow: 1,
+              width: '100%',
+              height: '100%',
+              minHeight: 0,
+              overflow: 'hidden',
+            }}
+          >
         {activeTab === 'body' && (
           <div
             style={{
@@ -893,6 +911,8 @@ export function ResponseViewer({
             </div>
           </div>
         )}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   )

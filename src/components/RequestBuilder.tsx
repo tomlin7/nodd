@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Button } from '@gpuix/react'
+import { AnimatePresence, Button, motion } from '@gpuix/react'
 import { Icon } from './Icons'
 import { KeyValueTable } from './KeyValueTable'
 import { C, FONT_MONO, FONT_SANS } from '../theme'
@@ -380,84 +380,95 @@ export function RequestBuilder({
       </div>
 
       {/* Tab Panes */}
-      <div style={{ marginTop: 6, width: '100%' }}>
-        {activeTab === 'tests' && (
-          <TestsPane
-            assertions={request.assertions}
-            onChange={(next) => onChange({ ...request, assertions: next })}
-          />
-        )}
-
-        {activeTab === 'params' && (
-          <KeyValueTable
-            pairs={request.params}
-            onChange={handleParamsChange}
-            keyPlaceholder="Parameter"
-            valuePlaceholder="Value"
-            emptyLabel="No query parameters defined"
-          />
-        )}
-
-        {activeTab === 'headers' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {/* Common Header Presets */}
-            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
-                Presets:
-              </text>
-              <PresetButton
-                label="JSON"
-                onClick={() => {
-                  const existing = request.headers.filter((h) => h.key.toLowerCase() !== 'content-type' && h.key.toLowerCase() !== 'accept')
-                  onChange({
-                    ...request,
-                    headers: [
-                      ...existing,
-                      { id: `h_${Date.now()}_1`, key: 'Content-Type', value: 'application/json', enabled: true },
-                      { id: `h_${Date.now()}_2`, key: 'Accept', value: 'application/json', enabled: true },
-                    ],
-                  })
-                }}
+      <div style={{ marginTop: 6, width: '100%', overflow: 'hidden' }}>
+        <AnimatePresence initial={false}>
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.12, ease: 'easeOut' }}
+            style={{ width: '100%' }}
+          >
+            {activeTab === 'tests' && (
+              <TestsPane
+                assertions={request.assertions}
+                onChange={(next) => onChange({ ...request, assertions: next })}
               />
-              <PresetButton
-                label="Bearer Auth"
-                onClick={() => {
-                  const existing = request.headers.filter((h) => h.key.toLowerCase() !== 'authorization')
-                  onChange({
-                    ...request,
-                    headers: [
-                      ...existing,
-                      { id: `h_${Date.now()}`, key: 'Authorization', value: 'Bearer {{token}}', enabled: true },
-                    ],
-                  })
-                }}
+            )}
+
+            {activeTab === 'params' && (
+              <KeyValueTable
+                pairs={request.params}
+                onChange={handleParamsChange}
+                keyPlaceholder="Parameter"
+                valuePlaceholder="Value"
+                emptyLabel="No query parameters defined"
               />
-            </div>
-            <KeyValueTable
-              pairs={request.headers}
-              onChange={(nextHeaders) => onChange({ ...request, headers: nextHeaders })}
-              keyPlaceholder="Header"
-              valuePlaceholder="Value"
-              emptyLabel="No headers defined"
-            />
-          </div>
-        )}
+            )}
 
-        {activeTab === 'auth' && (
-          <AuthPane
-            auth={request.auth}
-            onChange={(nextAuth) => onChange({ ...request, auth: nextAuth })}
-          />
-        )}
+            {activeTab === 'headers' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {/* Common Header Presets */}
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
+                    Presets:
+                  </text>
+                  <PresetButton
+                    label="JSON"
+                    onClick={() => {
+                      const existing = request.headers.filter((h) => h.key.toLowerCase() !== 'content-type' && h.key.toLowerCase() !== 'accept')
+                      onChange({
+                        ...request,
+                        headers: [
+                          ...existing,
+                          { id: `h_${Date.now()}_1`, key: 'Content-Type', value: 'application/json', enabled: true },
+                          { id: `h_${Date.now()}_2`, key: 'Accept', value: 'application/json', enabled: true },
+                        ],
+                      })
+                    }}
+                  />
+                  <PresetButton
+                    label="Bearer Auth"
+                    onClick={() => {
+                      const existing = request.headers.filter((h) => h.key.toLowerCase() !== 'authorization')
+                      onChange({
+                        ...request,
+                        headers: [
+                          ...existing,
+                          { id: `h_${Date.now()}`, key: 'Authorization', value: 'Bearer {{token}}', enabled: true },
+                        ],
+                      })
+                    }}
+                  />
+                </div>
+                <KeyValueTable
+                  pairs={request.headers}
+                  onChange={(nextHeaders) => onChange({ ...request, headers: nextHeaders })}
+                  keyPlaceholder="Header"
+                  valuePlaceholder="Value"
+                  emptyLabel="No headers defined"
+                />
+              </div>
+            )}
 
-        {activeTab === 'body' && (
-          <BodyPane
-            body={request.body}
-            onChange={(nextBody) => onChange({ ...request, body: nextBody })}
-            onFormatJson={handleFormatJson}
-            jsonError={jsonError}
-          />
-        )}
+            {activeTab === 'auth' && (
+              <AuthPane
+                auth={request.auth}
+                onChange={(nextAuth) => onChange({ ...request, auth: nextAuth })}
+              />
+            )}
+
+            {activeTab === 'body' && (
+              <BodyPane
+                body={request.body}
+                onChange={(nextBody) => onChange({ ...request, body: nextBody })}
+                onFormatJson={handleFormatJson}
+                jsonError={jsonError}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   )

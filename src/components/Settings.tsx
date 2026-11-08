@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Button } from '@gpuix/react'
+import { AnimatePresence, Button, motion } from '@gpuix/react'
 import { Icon } from './Icons'
 import { DragRegion, WindowControls } from './Titlebar'
 import {
@@ -199,6 +199,15 @@ export function Settings({
             overflow: 'hidden',
           }}
         >
+          <AnimatePresence initial={false}>
+            <motion.div
+              key={activeSection}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.12, ease: 'easeOut' }}
+              style={{ display: 'flex', flexDirection: 'column', width: '100%' }}
+            >
           {activeSection === 'network' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <text
@@ -452,7 +461,7 @@ export function Settings({
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    v1.0.0
+                    v0.2.0
                   </text>
                 </div>
                 <text
@@ -468,6 +477,8 @@ export function Settings({
               </div>
             </div>
           )}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </div>

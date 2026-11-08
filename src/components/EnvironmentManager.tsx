@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Button } from '@gpuix/react'
+import { AnimatePresence, Button, motion } from '@gpuix/react'
 import { Icon } from './Icons'
 import { WindowControls } from './Titlebar'
 import { C, FONT_MONO, FONT_SANS, TITLEBAR_HEIGHT } from '../theme'
@@ -276,17 +276,35 @@ export function EnvironmentManager({
         </div>
 
         {/* Content Pane */}
-        {selectedEnv ? (
-          <div
-            style={{
-              padding: 32,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 20,
-              overflow: 'hidden',
-              flexGrow: 1,
-            }}
-          >
+        <div
+          style={{
+            flexGrow: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 0,
+            overflow: 'hidden',
+            position: 'relative',
+          }}
+        >
+          <AnimatePresence initial={false}>
+            {selectedEnv ? (
+              <motion.div
+                key={selectedEnv.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.12, ease: 'easeOut' }}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  padding: 32,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 20,
+                  overflow: 'hidden',
+                  flexGrow: 1,
+                }}
+              >
             {/* Header with Name and Set Active Button */}
             <div
               style={{
@@ -486,14 +504,23 @@ export function EnvironmentManager({
                 </Button>
               </div>
             </div>
-          </div>
+          </motion.div>
         ) : (
-          <div style={{ padding: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <motion.div
+            key="empty-env"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.12, ease: 'easeOut' }}
+            style={{ width: '100%', height: '100%', padding: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
             <text style={{ fontSize: 13.5, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
               No environment selected
             </text>
-          </div>
+          </motion.div>
         )}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   )
