@@ -48,4 +48,39 @@ describe('ResponseViewer Logic and Helpers', () => {
     expect(results.length).toBe(2)
     expect(results.every((r) => r.passed)).toBe(true)
   })
+
+  it('filters lines preserving original line numbers', () => {
+    const raw = ['{\n', '  "title": "Nodd API",\n', '  "version": 1,\n', '  "author": "Nodd"\n', '}'].join('')
+    const lines = raw.split('\n')
+    const query = 'version'
+
+    const matches: Array<{ lineNum: number; content: string }> = []
+    lines.forEach((l, idx) => {
+      if (l.toLowerCase().includes(query.toLowerCase())) {
+        matches.push({ lineNum: idx + 1, content: l })
+      }
+    })
+
+    expect(matches.length).toBe(1)
+    expect(matches[0].lineNum).toBe(3)
+    expect(matches[0].content).toContain('"version": 1')
+  })
+
+  it('filters headers by key or value case-insensitively', () => {
+    const headers = {
+      'Content-Type': 'application/json; charset=utf-8',
+      'X-Request-Id': 'req-987-abc',
+      'Server': 'cloudflare',
+    }
+
+    const filter = (q: string) => {
+      const lower = q.toLowerCase()
+      return Object.entries(headers).filter(([k, v]) => k.toLowerCase().includes(lower) || v.toLowerCase().includes(lower))
+    }
+
+    expect(filter('content').length).toBe(1)
+    expect(filter('req-987').length).toBe(1)
+    expect(filter('cloudflare').length).toBe(1)
+    expect(filter('nonexistent').length).toBe(0)
+  })
 })
