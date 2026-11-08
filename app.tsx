@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
+  AnimatePresence,
   applyMacCpuThrottleFromEnv,
   motion,
   render,
@@ -358,6 +359,10 @@ export function NoddApp() {
           setSettingsOpen(false)
         } else if (envManagerOpen) {
           setEnvManagerOpen(false)
+        } else if (codeModalOpen) {
+          setCodeModalOpen(false)
+        } else if (importModalOpen) {
+          setImportModalOpen(false)
         }
         return
       }
@@ -390,115 +395,103 @@ export function NoddApp() {
         position: 'relative',
       }}
     >
-      {settingsOpen ? (
-        <Settings
-          settings={settings}
-          onSave={(next) => {
-            setSettings(next)
-            saveSettings(next)
-          }}
-          onClose={() => setSettingsOpen(false)}
-        />
-      ) : codeModalOpen && currentRequest ? (
-        <CodeSnippetModal
-          request={currentRequest}
+      {/* Base Workbench View */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
+          height: '100%',
+          overflow: 'hidden',
+        }}
+      >
+        <Titlebar
+          requestName={currentRequest ? currentRequest.name : ''}
+          method={currentRequest?.method}
           environment={activeEnvironment}
-          onClose={() => setCodeModalOpen(false)}
-        />
-      ) : importModalOpen ? (
-        <ImportModal
-          onImport={handleImportCollection}
-          onClose={() => setImportModalOpen(false)}
-        />
-      ) : envManagerOpen ? (
-        <EnvironmentManager
           environments={environments}
-          activeEnvironment={activeEnvironment}
+          sidebarOpen={sidebarOpen}
+          onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+          settingsOpen={settingsOpen}
+          onOpenSettings={() => setSettingsOpen(true)}
           onSelectEnvironment={(env) => setActiveEnvironment(env)}
-          onSaveEnvironments={(next) => {
-            setEnvironments(next)
-            saveEnvironments(next)
-          }}
-          onClose={() => setEnvManagerOpen(false)}
+          onOpenEnvironmentManager={() => setEnvManagerOpen(true)}
         />
-      ) : (
+
+        {/* Split Body: Sidebar + Main Workbench */}
         <div
           style={{
             display: 'flex',
-            flexDirection: 'column',
+            flexDirection: 'row',
+            flexGrow: 1,
             width: '100%',
-            height: '100%',
             overflow: 'hidden',
+            position: 'relative',
           }}
         >
-          <Titlebar
-            requestName={currentRequest ? currentRequest.name : ''}
-            method={currentRequest?.method}
-            environment={activeEnvironment}
-            environments={environments}
-            sidebarOpen={sidebarOpen}
-            onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
-            settingsOpen={settingsOpen}
-            onOpenSettings={() => setSettingsOpen(true)}
-            onSelectEnvironment={(env) => setActiveEnvironment(env)}
-            onOpenEnvironmentManager={() => setEnvManagerOpen(true)}
-          />
-
-          {/* Split Body: Sidebar + Main Workbench */}
-          <div
+          {/* Sliding Sidebar Drawer */}
+          <motion.div
+            initial={false}
+            animate={{ width: sidebarOpen ? sidebarWidth : 0 }}
+            transition={{ duration: resizing === 'left' ? 0 : 0.2, ease: 'easeOut' }}
             style={{
               display: 'flex',
               flexDirection: 'row',
-              flexGrow: 1,
-              width: '100%',
+              height: '100%',
+              flexShrink: 0,
               overflow: 'hidden',
               position: 'relative',
             }}
           >
-            {/* Sliding Sidebar Drawer */}
-            <motion.div
-              initial={false}
-              animate={{ width: sidebarOpen ? sidebarWidth : 0 }}
-              transition={{ duration: resizing === 'left' ? 0 : 0.2, ease: 'easeOut' }}
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                height: '100%',
-                flexShrink: 0,
-                overflow: 'hidden',
-                position: 'relative',
-              }}
-            >
-              <div style={{ width: sidebarWidth, height: '100%', display: 'flex', flexShrink: 0 }}>
-                <Sidebar
-                  collections={collections}
-                  history={history}
-                  activeRequestId={currentRequest?.id}
-                  onSelectRequest={handleSelectRequest}
-                  onCreateRequest={handleCreateRequest}
-                  onCreateCollection={handleCreateCollection}
-                  onDeleteRequest={handleDeleteRequest}
-                  onClearHistory={handleClearHistory}
-                  onImportCollection={() => setImportModalOpen(true)}
-                  onExportCollection={handleExportCollection}
-                />
-              </div>
-              {sidebarOpen && (
-                <ResizeHandle
-                  testId="resize-handle-left"
-                  side="left"
-                  isResizing={resizing === 'left'}
-                  onMouseDown={(e: any) => {
-                    if (e.button === 0) {
-                      resizeOrigin.current = { startX: e.x ?? 0, startWidth: sidebarWidth }
-                      setResizing('left')
-                    }
-                  }}
-                />
-              )}
-            </motion.div>
+            <div style={{ width: sidebarWidth, height: '100%', display: 'flex', flexShrink: 0 }}>
+              <Sidebar
+                collections={collections}
+                history={history}
+                activeRequestId={currentRequest?.id}
+                onSelectRequest={handleSelectRequest}
+                onCreateRequest={handleCreateRequest}
+                onCreateCollection={handleCreateCollection}
+                onDeleteRequest={handleDeleteRequest}
+                onClearHistory={handleClearHistory}
+                onImportCollection={() => setImportModalOpen(true)}
+                onExportCollection={handleExportCollection}
+              />
+            </div>
+            {sidebarOpen && (
+              <ResizeHandle
+                testId="resize-handle-left"
+                side="left"
+                isResizing={resizing === 'left'}
+                onMouseDown={(e: any) => {
+                  if (e.button === 0) {
+                    resizeOrigin.current = { startX: e.x ?? 0, startWidth: sidebarWidth }
+                    setResizing('left')
+                  }
+                }}
+              />
+            )}
+          </motion.div>
 
-            {/* Main Workbench Body with TabBar */}
+          {/* Main Workbench Body with TabBar */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              flexGrow: 1,
+              minWidth: 0,
+              minHeight: 0,
+              height: '100%',
+              overflow: 'hidden',
+            }}
+          >
+            <TabBar
+              tabs={tabs}
+              activeTabId={activeTabId}
+              onSelectTab={handleSelectTab}
+              onCloseTab={handleCloseTab}
+              onNewTab={() => handleNewTab()}
+            />
+
             <div
               style={{
                 display: 'flex',
@@ -508,48 +501,188 @@ export function NoddApp() {
                 minHeight: 0,
                 height: '100%',
                 overflow: 'hidden',
+                position: 'relative',
               }}
             >
-              <TabBar
-                tabs={tabs}
-                activeTabId={activeTabId}
-                onSelectTab={handleSelectTab}
-                onCloseTab={handleCloseTab}
-                onNewTab={() => handleNewTab()}
-              />
+              <AnimatePresence initial={false}>
+                {!currentRequest ? (
+                  <motion.div
+                    key="empty-workbench"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15, ease: 'easeOut' }}
+                    style={{
+                      display: 'flex',
+                      flexGrow: 1,
+                      width: '100%',
+                      height: '100%',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                    }}
+                  >
+                    <EmptyWorkbench onNewTab={() => handleNewTab()} />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="active-workbench"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15, ease: 'easeOut' }}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      flexGrow: 1,
+                      width: '100%',
+                      height: '100%',
+                      minHeight: 0,
+                      overflow: 'hidden',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                    }}
+                  >
+                    <RequestBuilder
+                      request={currentRequest}
+                      onChange={handleRequestChange}
+                      onSend={sendRequest}
+                      onSave={saveCurrentRequest}
+                      isLoading={isLoading}
+                      onOpenCodeSnippets={() => setCodeModalOpen(true)}
+                    />
 
-              {!currentRequest ? (
-                <EmptyWorkbench onNewTab={() => handleNewTab()} />
-              ) : (
-                <>
-                  <RequestBuilder
-                    request={currentRequest}
-                    onChange={handleRequestChange}
-                    onSend={sendRequest}
-                    onSave={saveCurrentRequest}
-                    isLoading={isLoading}
-                    onOpenCodeSnippets={() => setCodeModalOpen(true)}
-                  />
-
-                  <ResponseViewer
-                    response={response}
-                    request={currentRequest}
-                    isLoading={isLoading}
-                  />
-                </>
-              )}
+                    <ResponseViewer
+                      response={response}
+                      request={currentRequest}
+                      isLoading={isLoading}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
-
-          {/* Bottom Status Bar */}
-          <StatusBar
-            activeEnvironment={activeEnvironment}
-            response={response}
-            isLoading={isLoading}
-            onOpenEnvironmentManager={() => setEnvManagerOpen(true)}
-          />
         </div>
-      )}
+
+        {/* Bottom Status Bar */}
+        <StatusBar
+          activeEnvironment={activeEnvironment}
+          response={response}
+          isLoading={isLoading}
+          onOpenEnvironmentManager={() => setEnvManagerOpen(true)}
+        />
+      </div>
+
+      {/* Screen & Modal Overlays with Smooth Presence Transitions */}
+      <AnimatePresence initial={false}>
+        {settingsOpen && (
+          <motion.div
+            key="screen-settings"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.16, ease: 'easeOut' }}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: C.canvas,
+              overflow: 'hidden',
+            }}
+          >
+            <Settings
+              settings={settings}
+              onSave={(next) => {
+                setSettings(next)
+                saveSettings(next)
+              }}
+              onClose={() => setSettingsOpen(false)}
+            />
+          </motion.div>
+        )}
+
+        {envManagerOpen && (
+          <motion.div
+            key="screen-env-manager"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.16, ease: 'easeOut' }}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: C.canvas,
+              overflow: 'hidden',
+            }}
+          >
+            <EnvironmentManager
+              environments={environments}
+              activeEnvironment={activeEnvironment}
+              onSelectEnvironment={(env) => setActiveEnvironment(env)}
+              onSaveEnvironments={(next) => {
+                setEnvironments(next)
+                saveEnvironments(next)
+              }}
+              onClose={() => setEnvManagerOpen(false)}
+            />
+          </motion.div>
+        )}
+
+        {codeModalOpen && currentRequest && (
+          <motion.div
+            key="screen-code-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.16, ease: 'easeOut' }}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: C.canvas,
+              overflow: 'hidden',
+            }}
+          >
+            <CodeSnippetModal
+              request={currentRequest}
+              environment={activeEnvironment}
+              onClose={() => setCodeModalOpen(false)}
+            />
+          </motion.div>
+        )}
+
+        {importModalOpen && (
+          <motion.div
+            key="screen-import-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.16, ease: 'easeOut' }}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: C.canvas,
+              overflow: 'hidden',
+            }}
+          >
+            <ImportModal
+              onImport={handleImportCollection}
+              onClose={() => setImportModalOpen(false)}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Global Resizing Overlay */}
       {resizing !== null && (
