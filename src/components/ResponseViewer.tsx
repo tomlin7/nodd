@@ -32,6 +32,7 @@ export function ResponseViewer({
   const [viewMode, setViewMode] = useState<'pretty' | 'raw'>('pretty')
   const [copied, setCopied] = useState(false)
   const [filterQuery, setFilterQuery] = useState('')
+  const [headersFilterQuery, setHeadersFilterQuery] = useState('')
 
   // Test results evaluation
   const testResults = useMemo(() => {
@@ -57,14 +58,48 @@ export function ResponseViewer({
     }
   }, [response])
 
-  const lines = useMemo(() => {
+  const { lines, matchCount } = useMemo(() => {
     const text = viewMode === 'pretty' ? formattedBody : (response?.body ?? '')
-    if (!text) return []
-    const allLines = text.split('\n')
-    if (!filterQuery.trim()) return allLines
-    const q = filterQuery.toLowerCase()
-    return allLines.filter((l) => l.toLowerCase().includes(q))
-  }, [formattedBody, response, viewMode, filterQuery])
+    if (!text) return { lines: [], matchCount: 0 }
+    const rawLines = text.split('\n')
+    const q = filterQuery.trim().toLowerCase()
+
+    if (!q) {
+      return {
+        lines: rawLines.map((content, idx) => ({
+          lineNum: idx + 1,
+          content,
+          matches: false,
+        })),
+        matchCount: 0,
+      }
+    }
+
+    const filtered: Array<{ lineNum: number; content: string; matches: boolean }> = []
+    let matches = 0
+
+    for (let i = 0; i < rawLines.length; i++) {
+      const line = rawLines[i]
+      if (line.toLowerCase().includes(q)) {
+        matches++
+        filtered.push({
+          lineNum: i + 1,
+          content: line,
+          matches: true,
+        })
+      }
+    }
+
+    return { lines: filtered, matchCount: matches }
+  }, [formattedBody, response?.body, viewMode, filterQuery])
+
+  const filteredHeaderEntries = useMemo(() => {
+    if (!response?.headers) return []
+    const all = Object.entries(response.headers)
+    const q = headersFilterQuery.trim().toLowerCase()
+    if (!q) return all
+    return all.filter(([k, v]) => k.toLowerCase().includes(q) || v.toLowerCase().includes(q))
+  }, [response?.headers, headersFilterQuery])
 
   const copyToClipboard = async () => {
     if (!response?.body) return
@@ -495,6 +530,7 @@ export function ResponseViewer({
                 paddingRight: 14,
                 height: 36,
                 backgroundColor: '#1E1E23',
+                flexShrink: 0,
               }}
             >
               <Icon name="search" size={13} color={C.tertiary} />
@@ -512,12 +548,42 @@ export function ResponseViewer({
                   borderWidth: 0,
                   padding: 0,
                 }}
-                onChange={(e) => setFilterQuery(e.value ?? '')}
+                onChange={(e) => {
+                  const val = e?.value !== undefined ? e.value : (e as any)?.target?.value ?? ''
+                  setFilterQuery(val)
+                }}
               />
-              {filterQuery && (
-                <Button onClick={() => setFilterQuery('')} style={{ cursor: 'pointer' }}>
-                  <Icon name="close" size={12} color={C.tertiary} />
-                </Button>
+              {filterQuery.trim().length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                  <text
+                    testId="response-filter-match-count"
+                    style={{
+                      fontSize: 11.5,
+                      fontFamily: FONT_SANS,
+                      color: matchCount === 0 ? C.warning : C.tertiary,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {matchCount === 0 ? 'No matches' : `${matchCount} ${matchCount === 1 ? 'match' : 'matches'}`}
+                  </text>
+                  <Button
+                    testId="clear-filter-button"
+                    onClick={() => setFilterQuery('')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: 20,
+                      height: 20,
+                      borderRadius: 4,
+                      backgroundColor: 'transparent',
+                      cursor: 'pointer',
+                      hover: { backgroundColor: C.overlay },
+                    }}
+                  >
+                    <Icon name="close" size={12} color={C.tertiary} />
+                  </Button>
+                </div>
               )}
             </div>
 
@@ -534,19 +600,23 @@ export function ResponseViewer({
               }}
             >
               {lines.length === 0 ? (
-                <text style={{ fontSize: 13, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
-                  Empty response body
-                </text>
+                <div style={{ padding: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <text style={{ fontSize: 13, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
+                    {filterQuery.trim() ? `No lines matching "${filterQuery}"` : 'Empty response body'}
+                  </text>
+                </div>
               ) : (
-                lines.map((line, idx) => (
+                lines.map((item) => (
                   <div
-                    key={idx}
+                    key={item.lineNum}
                     style={{
                       display: 'flex',
                       flexDirection: 'row',
                       alignItems: 'flex-start',
                       gap: 12,
                       lineHeight: 20,
+                      backgroundColor: item.matches ? '#202028' : 'transparent',
+                      borderRadius: 3,
                     }}
                   >
                     <div style={{ width: 36, flexShrink: 0, textAlign: 'right' }}>
@@ -554,11 +624,11 @@ export function ResponseViewer({
                         style={{
                           fontSize: 12,
                           fontFamily: FONT_MONO,
-                          color: C.ghost,
+                          color: item.matches ? C.accent : C.ghost,
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        {`${idx + 1}`}
+                        {`${item.lineNum}`}
                       </text>
                     </div>
                     <div style={{ flexGrow: 1, minWidth: 0 }}>
@@ -566,11 +636,11 @@ export function ResponseViewer({
                         style={{
                           fontSize: 13,
                           fontFamily: FONT_MONO,
-                          color: line.includes(':') && line.includes('"') ? C.accent : C.text,
+                          color: item.matches ? C.text : item.content.includes(':') && item.content.includes('"') ? C.accent : C.text,
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        {line}
+                        {item.content}
                       </text>
                     </div>
                   </div>
@@ -672,6 +742,79 @@ export function ResponseViewer({
               overflow: 'hidden',
             }}
           >
+            {/* Headers Search Bar */}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 8,
+                paddingLeft: 14,
+                paddingRight: 14,
+                height: 36,
+                backgroundColor: '#1E1E23',
+                borderBottomWidth: 1,
+                borderColor: C.border,
+                flexShrink: 0,
+              }}
+            >
+              <Icon name="search" size={13} color={C.tertiary} />
+              <input
+                testId="headers-filter-input"
+                value={headersFilterQuery}
+                placeholder="Filter headers by name or value..."
+                theme={{ text: C.text, textMuted: C.secondary, textFaint: C.tertiary }}
+                style={{
+                  width: '100%',
+                  fontSize: 13,
+                  fontFamily: FONT_MONO,
+                  color: C.text,
+                  backgroundColor: 'transparent',
+                  borderWidth: 0,
+                  padding: 0,
+                }}
+                onChange={(e) => {
+                  const val = e?.value !== undefined ? e.value : (e as any)?.target?.value ?? ''
+                  setHeadersFilterQuery(val)
+                }}
+              />
+              {headersFilterQuery.trim().length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                  <text
+                    testId="headers-filter-match-count"
+                    style={{
+                      fontSize: 11.5,
+                      fontFamily: FONT_SANS,
+                      color: filteredHeaderEntries.length === 0 ? C.warning : C.tertiary,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {filteredHeaderEntries.length === 0
+                      ? 'No matches'
+                      : `${filteredHeaderEntries.length} of ${headerEntries.length}`}
+                  </text>
+                  <Button
+                    testId="clear-headers-filter-button"
+                    onClick={() => setHeadersFilterQuery('')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: 20,
+                      height: 20,
+                      borderRadius: 4,
+                      backgroundColor: 'transparent',
+                      cursor: 'pointer',
+                      hover: { backgroundColor: C.overlay },
+                    }}
+                  >
+                    <Icon name="close" size={12} color={C.tertiary} />
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Column Headers */}
             <div
               style={{
                 display: 'flex',
@@ -711,7 +854,14 @@ export function ResponseViewer({
                 gap: 8,
               }}
             >
-              {headerEntries.map(([k, v]) => (
+              {filteredHeaderEntries.length === 0 ? (
+                <div style={{ padding: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <text style={{ fontSize: 13, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
+                    {headersFilterQuery.trim() ? `No headers matching "${headersFilterQuery}"` : 'No headers returned'}
+                  </text>
+                </div>
+              ) : (
+                filteredHeaderEntries.map(([k, v]) => (
                 <div
                   key={k}
                   style={{
@@ -738,7 +888,8 @@ export function ResponseViewer({
                     </text>
                   </div>
                 </div>
-              ))}
+              ))
+              )}
             </div>
           </div>
         )}
