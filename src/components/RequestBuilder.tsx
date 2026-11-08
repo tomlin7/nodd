@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { AnimatePresence, Button, motion } from '@gpuix/react'
+import { FloatingLayer } from '@gpuix/react/floating'
 import { Icon } from './Icons'
 import { KeyValueTable } from './KeyValueTable'
 import { C, FONT_MONO, FONT_SANS } from '../theme'
@@ -151,20 +152,26 @@ export function RequestBuilder({
 
           {/* Method Menu List */}
           {methodMenuOpen && (
-            <div
-              style={{
-                position: 'absolute',
-                top: 42,
-                left: 0,
-                width: 130,
-                backgroundColor: '#1E1E23',
-                borderRadius: 8,
-                padding: 4,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2,
-              }}
+            <FloatingLayer
+              side="bottom"
+              align="start"
+              sideOffset={4}
+              onMouseDownOutside={() => setMethodMenuOpen(false)}
             >
+              <div
+                testId="method-dropdown-menu"
+                style={{
+                  width: 130,
+                  backgroundColor: '#1E1E23',
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: C.borderStrong,
+                  padding: 4,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 2,
+                }}
+              >
               {METHODS.map((m) => (
                 <Button
                   key={m}
@@ -197,7 +204,8 @@ export function RequestBuilder({
                   </text>
                 </Button>
               ))}
-            </div>
+              </div>
+            </FloatingLayer>
           )}
         </div>
 
