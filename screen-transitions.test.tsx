@@ -113,4 +113,57 @@ describeNative('Screen Transitions Automation', () => {
 
     await app.close()
   })
+
+  it('renders environment and method dropdown menus in deferred floating layer', async () => {
+    const { render, renderer } = createTestRoot({ width: 1200, height: 800 })
+    render(<NoddApp />)
+    const app = await connectTest(renderer)
+
+    // 1. Open Environment dropdown from Titlebar
+    const envSelectorBtn = app.getByTestId('env-selector-button')
+    await envSelectorBtn.waitFor({ timeoutMs: 3000 })
+    const envBounds = await envSelectorBtn.bounds()
+    await app.mouse.down({ x: envBounds.x + envBounds.width / 2, y: envBounds.y + envBounds.height / 2 })
+    await app.mouse.up({ x: envBounds.x + envBounds.width / 2, y: envBounds.y + envBounds.height / 2 })
+
+    await new Promise((r) => setTimeout(r, 150))
+
+    // 2. Verify env dropdown menu is mounted and visible
+    const envMenu = app.getByTestId('env-dropdown-menu')
+    await envMenu.waitFor({ timeoutMs: 3000 })
+    expect(envMenu).toBeDefined()
+
+    // 3. Click outside in workbench to dismiss
+    const titlebarHeader = app.getByTestId('titlebar-drag-header')
+    const tBounds = await titlebarHeader.bounds()
+    await app.mouse.down({ x: tBounds.x + tBounds.width / 2, y: tBounds.y + tBounds.height / 2 })
+    await app.mouse.up({ x: tBounds.x + tBounds.width / 2, y: tBounds.y + tBounds.height / 2 })
+
+    await new Promise((r) => setTimeout(r, 150))
+
+    // 4. Open Method dropdown in RequestBuilder
+    const methodBtn = app.getByTestId('method-selector-button')
+    await methodBtn.waitFor({ timeoutMs: 3000 })
+    const mBounds = await methodBtn.bounds()
+    await app.mouse.down({ x: mBounds.x + mBounds.width / 2, y: mBounds.y + mBounds.height / 2 })
+    await app.mouse.up({ x: mBounds.x + mBounds.width / 2, y: mBounds.y + mBounds.height / 2 })
+
+    await new Promise((r) => setTimeout(r, 150))
+
+    // 5. Verify method dropdown menu is mounted and visible
+    const methodMenu = app.getByTestId('method-dropdown-menu')
+    await methodMenu.waitFor({ timeoutMs: 3000 })
+    expect(methodMenu).toBeDefined()
+
+    // Select POST method
+    const postOption = app.getByTestId('method-option-POST')
+    await postOption.waitFor({ timeoutMs: 3000 })
+    const postBounds = await postOption.bounds()
+    await app.mouse.down({ x: postBounds.x + postBounds.width / 2, y: postBounds.y + postBounds.height / 2 })
+    await app.mouse.up({ x: postBounds.x + postBounds.width / 2, y: postBounds.y + postBounds.height / 2 })
+
+    await new Promise((r) => setTimeout(r, 150))
+
+    await app.close()
+  })
 })

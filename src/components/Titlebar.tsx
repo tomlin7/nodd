@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Button, useGpuix } from '@gpuix/react'
+import { FloatingLayer } from '@gpuix/react/floating'
 import { Icon } from './Icons'
 import { C, FONT_MONO, FONT_SANS, IconButton, IS_DARWIN, TITLEBAR_HEIGHT } from '../theme'
 import type { Environment, HttpMethod } from '../core/types'
@@ -289,21 +290,26 @@ export function Titlebar({
           </Button>
 
           {envMenuOpen && (
-            <div
-              testId="env-dropdown-menu"
-              style={{
-                position: 'absolute',
-                top: 32,
-                right: 0,
-                width: 200,
-                backgroundColor: '#1E1E23',
-                borderRadius: 8,
-                padding: 4,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2,
-              }}
+            <FloatingLayer
+              side="bottom"
+              align="end"
+              sideOffset={4}
+              onMouseDownOutside={() => setEnvMenuOpen(false)}
             >
+              <div
+                testId="env-dropdown-menu"
+                style={{
+                  width: 200,
+                  backgroundColor: '#1E1E23',
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: C.borderStrong,
+                  padding: 4,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 2,
+                }}
+              >
               {/* Option: No Environment */}
               <Button
                 testId="env-option-none"
@@ -404,6 +410,7 @@ export function Titlebar({
                 </text>
               </Button>
             </div>
+          </FloatingLayer>
           )}
         </div>
 
