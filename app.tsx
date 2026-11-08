@@ -9,6 +9,7 @@ import { Titlebar } from './src/components/Titlebar'
 import { Settings } from './src/components/Settings'
 import { Sidebar } from './src/components/Sidebar'
 import { TabBar } from './src/components/TabBar'
+import { EmptyWorkbench } from './src/components/EmptyWorkbench'
 import { RequestBuilder } from './src/components/RequestBuilder'
 import { ResponseViewer } from './src/components/ResponseViewer'
 import { EnvironmentManager } from './src/components/EnvironmentManager'
@@ -81,8 +82,8 @@ export function NoddApp() {
   })
   const [activeTabId, setActiveTabId] = useState<string>(() => tabs[0]?.id ?? 'tab-1')
 
-  const activeTab = tabs.find((t) => t.id === activeTabId) ?? tabs[0]
-  const currentRequest = activeTab?.request ?? createInitialRequest()
+  const activeTab = tabs.find((t) => t.id === activeTabId)
+  const currentRequest = activeTab?.request
   const response = activeTab?.response ?? null
   const isLoading = activeTab?.isLoading ?? false
 
@@ -100,7 +101,7 @@ export function NoddApp() {
   const handleCloseTab = useCallback(
     (tabId: string) => {
       setTabs((prev) => {
-        const next = closeTabHelper(prev, activeTabId, tabId, () => createInitialRequest())
+        const next = closeTabHelper(prev, activeTabId, tabId)
         setActiveTabId(next.activeTabId)
         return next.tabs
       })
@@ -128,6 +129,7 @@ export function NoddApp() {
 
       // 2. If current tab is clean & blank, replace it
       if (
+        activeTab &&
         !isTabDirty(activeTab) &&
         activeTab.request.name === 'New Request' &&
         activeTab.response === null
@@ -147,7 +149,7 @@ export function NoddApp() {
   )
 
   const sendRequest = useCallback(async () => {
-    if (isLoading) return
+    if (isLoading || !currentRequest) return
     const targetTabId = activeTabId
     const targetRequest = currentRequest
 
@@ -183,6 +185,7 @@ export function NoddApp() {
   }, [isLoading, activeTabId, currentRequest, activeEnvironment, settings])
 
   const saveCurrentRequest = useCallback(() => {
+    if (!currentRequest) return
     const cols = [...collections]
     if (cols.length === 0) return
 
@@ -396,7 +399,7 @@ export function NoddApp() {
           }}
           onClose={() => setSettingsOpen(false)}
         />
-      ) : codeModalOpen ? (
+      ) : codeModalOpen && currentRequest ? (
         <CodeSnippetModal
           request={currentRequest}
           environment={activeEnvironment}
@@ -429,8 +432,8 @@ export function NoddApp() {
           }}
         >
           <Titlebar
-            requestName={currentRequest.name}
-            method={currentRequest.method}
+            requestName={currentRequest ? currentRequest.name : ''}
+            method={currentRequest?.method}
             environment={activeEnvironment}
             environments={environments}
             sidebarOpen={sidebarOpen}
@@ -470,7 +473,7 @@ export function NoddApp() {
                 <Sidebar
                   collections={collections}
                   history={history}
-                  activeRequestId={currentRequest.id}
+                  activeRequestId={currentRequest?.id}
                   onSelectRequest={handleSelectRequest}
                   onCreateRequest={handleCreateRequest}
                   onCreateCollection={handleCreateCollection}
@@ -515,19 +518,26 @@ export function NoddApp() {
                 onNewTab={() => handleNewTab()}
               />
 
-              <RequestBuilder
-                request={currentRequest}
-                onChange={handleRequestChange}
-                onSend={sendRequest}
-                onSave={saveCurrentRequest}
-                isLoading={isLoading}
-              />
+              {!currentRequest ? (
+                <EmptyWorkbench onNewTab={() => handleNewTab()} />
+              ) : (
+                <>
+                  <RequestBuilder
+                    request={currentRequest}
+                    onChange={handleRequestChange}
+                    onSend={sendRequest}
+                    onSave={saveCurrentRequest}
+                    isLoading={isLoading}
+                    onOpenCodeSnippets={() => setCodeModalOpen(true)}
+                  />
 
-              <ResponseViewer
-                response={response}
-                request={currentRequest}
-                isLoading={isLoading}
-              />
+                  <ResponseViewer
+                    response={response}
+                    request={currentRequest}
+                    isLoading={isLoading}
+                  />
+                </>
+              )}
             </div>
           </div>
 
