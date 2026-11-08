@@ -138,6 +138,7 @@ export function ResponseViewer({
         display: 'flex',
         flexDirection: 'column',
         flexGrow: 1,
+        minHeight: 0,
         width: '100%',
         height: '100%',
         backgroundColor: C.canvas,
@@ -466,6 +467,7 @@ export function ResponseViewer({
           display: 'flex',
           flexDirection: 'column',
           flexGrow: 1,
+          minHeight: 0,
           overflow: 'hidden',
           padding: 16,
         }}
@@ -476,6 +478,7 @@ export function ResponseViewer({
               display: 'flex',
               flexDirection: 'column',
               flexGrow: 1,
+              minHeight: 0,
               borderRadius: 10,
               backgroundColor: C.card,
               overflow: 'hidden',
@@ -520,12 +523,14 @@ export function ResponseViewer({
 
             {/* Line Viewer */}
             <div
+              testId="response-line-viewer"
               style={{
                 display: 'flex',
                 flexDirection: 'column',
                 flexGrow: 1,
+                minHeight: 0,
                 padding: 12,
-                overflow: 'hidden',
+                overflowY: 'scroll',
               }}
             >
               {lines.length === 0 ? (
@@ -582,9 +587,10 @@ export function ResponseViewer({
               display: 'flex',
               flexDirection: 'column',
               flexGrow: 1,
+              minHeight: 0,
               padding: 16,
               gap: 8,
-              overflow: 'hidden',
+              overflowY: 'scroll',
               backgroundColor: '#101012',
             }}
           >
@@ -660,11 +666,10 @@ export function ResponseViewer({
               display: 'flex',
               flexDirection: 'column',
               flexGrow: 1,
+              minHeight: 0,
               borderRadius: 10,
               backgroundColor: C.card,
-              padding: 14,
               overflow: 'hidden',
-              gap: 8,
             }}
           >
             <div
@@ -673,7 +678,13 @@ export function ResponseViewer({
                 flexDirection: 'row',
                 alignItems: 'center',
                 gap: 12,
-                paddingBottom: 6,
+                paddingLeft: 14,
+                paddingRight: 14,
+                paddingTop: 12,
+                paddingBottom: 8,
+                borderBottomWidth: 1,
+                borderColor: C.border,
+                flexShrink: 0,
               }}
             >
               <div style={{ width: 220, flexShrink: 0 }}>
@@ -688,33 +699,47 @@ export function ResponseViewer({
               </div>
             </div>
 
-            {headerEntries.map(([k, v]) => (
-              <div
-                key={k}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 12,
-                  height: 32,
-                  paddingLeft: 8,
-                  paddingRight: 8,
-                  borderRadius: 5,
-                  backgroundColor: C.surface,
-                }}
-              >
-                <div style={{ width: 220, flexShrink: 0 }}>
-                  <text style={{ fontSize: 12.5, fontFamily: FONT_MONO, color: C.accent, whiteSpace: 'nowrap' }}>
-                    {k}
-                  </text>
+            <div
+              testId="response-headers-viewer"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                flexGrow: 1,
+                minHeight: 0,
+                padding: 14,
+                overflowY: 'scroll',
+                gap: 8,
+              }}
+            >
+              {headerEntries.map(([k, v]) => (
+                <div
+                  key={k}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 12,
+                    height: 32,
+                    paddingLeft: 8,
+                    paddingRight: 8,
+                    borderRadius: 5,
+                    backgroundColor: C.surface,
+                    flexShrink: 0,
+                  }}
+                >
+                  <div style={{ width: 220, flexShrink: 0 }}>
+                    <text style={{ fontSize: 12.5, fontFamily: FONT_MONO, color: C.accent, whiteSpace: 'nowrap' }}>
+                      {k}
+                    </text>
+                  </div>
+                  <div style={{ flexGrow: 1, minWidth: 0 }}>
+                    <text style={{ fontSize: 12.5, fontFamily: FONT_MONO, color: C.text, whiteSpace: 'nowrap' }}>
+                      {v}
+                    </text>
+                  </div>
                 </div>
-                <div style={{ flexGrow: 1, minWidth: 0 }}>
-                  <text style={{ fontSize: 12.5, fontFamily: FONT_MONO, color: C.text, whiteSpace: 'nowrap' }}>
-                    {v}
-                  </text>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
       </div>

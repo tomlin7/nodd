@@ -1,6 +1,6 @@
 {
   "name": "nodd",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Fast, GPU-accelerated minimalist HTTP client and API workbench built with GPUIX",
   "private": true,
   "type": "module",
