@@ -98,6 +98,7 @@ export function RequestBuilder({
         display: 'flex',
         flexDirection: 'column',
         width: '100%',
+        flexShrink: 0,
         paddingLeft: 20,
         paddingRight: 20,
         paddingTop: 16,

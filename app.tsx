@@ -502,6 +502,7 @@ export function NoddApp() {
                 flexDirection: 'column',
                 flexGrow: 1,
                 minWidth: 0,
+                minHeight: 0,
                 height: '100%',
                 overflow: 'hidden',
               }}
