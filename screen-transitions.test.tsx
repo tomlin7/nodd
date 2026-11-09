@@ -166,4 +166,53 @@ describeNative('Screen Transitions Automation', () => {
 
     await app.close()
   })
+
+  it('opens and closes Command Palette from status bar and titlebar', async () => {
+    const { render, renderer } = createTestRoot({ width: 1200, height: 800 })
+    render(<NoddApp />)
+    const app = await connectTest(renderer)
+
+    // 1. Click Command Palette trigger in status bar
+    const statusBarCmdBtn = app.getByTestId('status-bar-command-palette')
+    await statusBarCmdBtn.waitFor({ timeoutMs: 3000 })
+    const sBounds = await statusBarCmdBtn.bounds()
+    await app.mouse.down({ x: sBounds.x + sBounds.width / 2, y: sBounds.y + sBounds.height / 2 })
+    await app.mouse.up({ x: sBounds.x + sBounds.width / 2, y: sBounds.y + sBounds.height / 2 })
+
+    await new Promise((r) => setTimeout(r, 200))
+
+    // 2. Verify Command Palette input is mounted
+    const cmdInput = app.getByTestId('command-palette-input')
+    await cmdInput.waitFor({ timeoutMs: 3000 })
+    expect(cmdInput).toBeDefined()
+
+    // 3. Verify Command Palette list items exist
+    const sendCmd = app.getByTestId('command-item-send-request')
+    await sendCmd.waitFor({ timeoutMs: 3000 })
+    expect(sendCmd).toBeDefined()
+
+    // 4. Click backdrop to dismiss
+    const backdrop = app.getByTestId('command-palette-backdrop')
+    await backdrop.waitFor({ timeoutMs: 3000 })
+    await app.mouse.down({ x: 10, y: 10 })
+    await app.mouse.up({ x: 10, y: 10 })
+
+    await new Promise((r) => setTimeout(r, 200))
+
+    // 5. Open from Titlebar search icon
+    const titlebarCmdBtn = app.getByTestId('open-command-palette')
+    await titlebarCmdBtn.waitFor({ timeoutMs: 3000 })
+    const tBounds = await titlebarCmdBtn.bounds()
+    await app.mouse.down({ x: tBounds.x + tBounds.width / 2, y: tBounds.y + tBounds.height / 2 })
+    await app.mouse.up({ x: tBounds.x + tBounds.width / 2, y: tBounds.y + tBounds.height / 2 })
+
+    await new Promise((r) => setTimeout(r, 200))
+
+    // 6. Verify Command Palette opened again
+    const cmdInput2 = app.getByTestId('command-palette-input')
+    await cmdInput2.waitFor({ timeoutMs: 3000 })
+    expect(cmdInput2).toBeDefined()
+
+    await app.close()
+  })
 })

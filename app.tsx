@@ -17,6 +17,7 @@ import { EnvironmentManager } from './src/components/EnvironmentManager'
 import { StatusBar } from './src/components/StatusBar'
 import { CodeSnippetModal } from './src/components/CodeSnippetModal'
 import { ImportModal } from './src/components/ImportModal'
+import { CommandPalette } from './src/components/CommandPalette'
 import { exportPostmanCollection } from './src/core/postman'
 import { C, ResizeHandle } from './src/theme'
 import type {
@@ -59,6 +60,7 @@ export function NoddApp() {
   const [envManagerOpen, setEnvManagerOpen] = useState(false)
   const [codeModalOpen, setCodeModalOpen] = useState(false)
   const [importModalOpen, setImportModalOpen] = useState(false)
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
 
   // Resizable Sidebar State
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -346,6 +348,13 @@ export function NoddApp() {
         return
       }
 
+      // Command Palette: Ctrl+K / Cmd+K or Ctrl+P / Cmd+P
+      if (isCtrl && (key === 'k' || key === 'p')) {
+        e.preventDefault?.()
+        setCommandPaletteOpen((prev) => !prev)
+        return
+      }
+
       // Toggle sidebar: Ctrl+B / Cmd+B
       if (isCtrl && key === 'b') {
         e.preventDefault?.()
@@ -355,7 +364,9 @@ export function NoddApp() {
 
       // Escape: Close modals / views
       if (e.key === 'Escape') {
-        if (settingsOpen) {
+        if (commandPaletteOpen) {
+          setCommandPaletteOpen(false)
+        } else if (settingsOpen) {
           setSettingsOpen(false)
         } else if (envManagerOpen) {
           setEnvManagerOpen(false)
@@ -416,6 +427,7 @@ export function NoddApp() {
           onOpenSettings={() => setSettingsOpen(true)}
           onSelectEnvironment={(env) => setActiveEnvironment(env)}
           onOpenEnvironmentManager={() => setEnvManagerOpen(true)}
+          onOpenCommandPalette={() => setCommandPaletteOpen(true)}
         />
 
         {/* Split Body: Sidebar + Main Workbench */}
@@ -571,6 +583,7 @@ export function NoddApp() {
           response={response}
           isLoading={isLoading}
           onOpenEnvironmentManager={() => setEnvManagerOpen(true)}
+          onOpenCommandPalette={() => setCommandPaletteOpen(true)}
         />
       </div>
 
@@ -681,6 +694,42 @@ export function NoddApp() {
               onClose={() => setImportModalOpen(false)}
             />
           </motion.div>
+        )}
+
+        {commandPaletteOpen && (
+          <CommandPalette
+            isOpen={commandPaletteOpen}
+            onClose={() => setCommandPaletteOpen(false)}
+            onSendRequest={sendRequest}
+            onSaveRequest={saveCurrentRequest}
+            onNewTab={() => handleNewTab()}
+            onCloseTab={() => handleCloseTab(activeTabId)}
+            onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+            onOpenSettings={() => {
+              setCommandPaletteOpen(false)
+              setSettingsOpen(true)
+            }}
+            onOpenEnvironmentManager={() => {
+              setCommandPaletteOpen(false)
+              setEnvManagerOpen(true)
+            }}
+            onOpenCodeSnippets={() => {
+              setCommandPaletteOpen(false)
+              setCodeModalOpen(true)
+            }}
+            onImportCollection={() => {
+              setCommandPaletteOpen(false)
+              setImportModalOpen(true)
+            }}
+            onExportCollection={handleExportCollection}
+            onClearHistory={handleClearHistory}
+            environments={environments}
+            activeEnvironment={activeEnvironment}
+            onSelectEnvironment={(env) => setActiveEnvironment(env)}
+            collections={collections}
+            onSelectRequest={handleSelectRequest}
+            currentRequest={currentRequest}
+          />
         )}
       </AnimatePresence>
 
