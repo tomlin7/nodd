@@ -10,11 +10,13 @@ export function StatusBar({
   response,
   isLoading,
   onOpenEnvironmentManager,
+  onOpenCommandPalette,
 }: {
   activeEnvironment?: Environment | null
   response?: HttpResponse | null
   isLoading?: boolean
   onOpenEnvironmentManager?: () => void
+  onOpenCommandPalette?: () => void
 }) {
   const getStatusColor = (status?: number) => {
     if (!status) return C.tertiary
@@ -125,40 +127,47 @@ export function StatusBar({
         )}
       </div>
 
-      {/* Right: Keyboard shortcuts cheat sheet */}
-      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <text style={{ fontSize: 11, fontFamily: FONT_MONO, color: C.tertiary, whiteSpace: 'nowrap' }}>
-            ^⏎
-          </text>
-          <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
-            Send
-          </text>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <text style={{ fontSize: 11, fontFamily: FONT_MONO, color: C.tertiary, whiteSpace: 'nowrap' }}>
-            ^S
-          </text>
-          <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
-            Save
-          </text>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <text style={{ fontSize: 11, fontFamily: FONT_MONO, color: C.tertiary, whiteSpace: 'nowrap' }}>
-            ^N
-          </text>
-          <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
-            New
-          </text>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <text style={{ fontSize: 11, fontFamily: FONT_MONO, color: C.tertiary, whiteSpace: 'nowrap' }}>
-            ^B
-          </text>
-          <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.tertiary, whiteSpace: 'nowrap' }}>
-            Sidebar
-          </text>
-        </div>
+      {/* Right: Calm Postman-style footer actions & Command Palette trigger */}
+      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        {onOpenCommandPalette && (
+          <Button
+            testId="status-bar-command-palette"
+            onClick={onOpenCommandPalette}
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+              paddingLeft: 7,
+              paddingRight: 7,
+              height: 20,
+              borderRadius: 4,
+              cursor: 'pointer',
+              backgroundColor: 'transparent',
+              hover: { backgroundColor: C.overlay },
+            }}
+          >
+            <Icon name="search" size={11} color={C.tertiary} />
+            <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.secondary, whiteSpace: 'nowrap' }}>
+              Command Palette
+            </text>
+            <div
+              style={{
+                paddingLeft: 4,
+                paddingRight: 4,
+                height: 15,
+                borderRadius: 3,
+                backgroundColor: '#26262C',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <text style={{ fontSize: 10, fontFamily: FONT_MONO, color: C.tertiary, whiteSpace: 'nowrap' }}>
+                ^K
+              </text>
+            </div>
+          </Button>
+        )}
       </div>
     </div>
   )

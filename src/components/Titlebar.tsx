@@ -126,6 +126,7 @@ export function Titlebar({
   onOpenSettings,
   onSelectEnvironment,
   onOpenEnvironmentManager,
+  onOpenCommandPalette,
 }: {
   requestName?: string
   method?: HttpMethod
@@ -137,6 +138,7 @@ export function Titlebar({
   onOpenSettings: () => void
   onSelectEnvironment?: (env: Environment | null) => void
   onOpenEnvironmentManager?: () => void
+  onOpenCommandPalette?: () => void
 }) {
   const methodColor = method ? C.methods[method] || C.accent : C.accent
   const [envMenuOpen, setEnvMenuOpen] = useState(false)
@@ -413,6 +415,16 @@ export function Titlebar({
           </FloatingLayer>
           )}
         </div>
+
+        {onOpenCommandPalette && (
+          <IconButton
+            icon="search"
+            testId="open-command-palette"
+            active={false}
+            tooltip="Command Palette (Ctrl+K)"
+            onClick={onOpenCommandPalette}
+          />
+        )}
 
         <IconButton
           icon="settings"
