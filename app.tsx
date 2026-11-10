@@ -18,6 +18,7 @@ import { StatusBar } from './src/components/StatusBar'
 import { CodeSnippetModal } from './src/components/CodeSnippetModal'
 import { ImportModal } from './src/components/ImportModal'
 import { CommandPalette } from './src/components/CommandPalette'
+import { UnsavedChangesModal } from './src/components/UnsavedChangesModal'
 import { exportPostmanCollection } from './src/core/postman'
 import { C, ResizeHandle } from './src/theme'
 import type {
@@ -85,6 +86,9 @@ export function NoddApp() {
     return [createTab(firstReq ?? createInitialRequest())]
   })
   const [activeTabId, setActiveTabId] = useState<string>(() => tabs[0]?.id ?? 'tab-1')
+  const [pendingCloseTabId, setPendingCloseTabId] = useState<string | null>(null)
+  const pendingCloseTab = tabs.find((t) => t.id === pendingCloseTabId)
+  const pendingCloseTabName = pendingCloseTab?.request.name || 'Untitled Request'
 
   const activeTab = tabs.find((t) => t.id === activeTabId)
   const currentRequest = activeTab?.request
@@ -104,14 +108,78 @@ export function NoddApp() {
 
   const handleCloseTab = useCallback(
     (tabId: string) => {
+      const targetTab = tabs.find((t) => t.id === tabId)
+      if (targetTab && isTabDirty(targetTab)) {
+        setPendingCloseTabId(tabId)
+        return
+      }
+
       setTabs((prev) => {
         const next = closeTabHelper(prev, activeTabId, tabId)
         setActiveTabId(next.activeTabId)
         return next.tabs
       })
     },
-    [activeTabId]
+    [tabs, activeTabId]
   )
+
+  const handleSaveAndClosePendingTab = useCallback(() => {
+    if (!pendingCloseTabId) return
+    const targetTab = tabs.find((t) => t.id === pendingCloseTabId)
+    if (!targetTab) {
+      setPendingCloseTabId(null)
+      return
+    }
+
+    const reqToSave = targetTab.request
+    const cols = [...collections]
+    if (cols.length > 0) {
+      let updated = false
+      for (const c of cols) {
+        const reqIdx = c.requests.findIndex((r) => r.id === reqToSave.id)
+        if (reqIdx !== -1) {
+          c.requests[reqIdx] = { ...reqToSave }
+          updated = true
+          break
+        }
+        for (const f of c.folders) {
+          const folderReqIdx = f.requests.findIndex((r) => r.id === reqToSave.id)
+          if (folderReqIdx !== -1) {
+            f.requests[folderReqIdx] = { ...reqToSave }
+            updated = true
+            break
+          }
+        }
+        if (updated) break
+      }
+      if (!updated) {
+        cols[0].requests.unshift({ ...reqToSave })
+      }
+      setCollections(cols)
+      saveCollections(cols)
+    }
+
+    setTabs((prev) => {
+      const next = closeTabHelper(prev, activeTabId, pendingCloseTabId)
+      setActiveTabId(next.activeTabId)
+      return next.tabs
+    })
+    setPendingCloseTabId(null)
+  }, [pendingCloseTabId, tabs, activeTabId, collections])
+
+  const handleDiscardAndClosePendingTab = useCallback(() => {
+    if (!pendingCloseTabId) return
+    setTabs((prev) => {
+      const next = closeTabHelper(prev, activeTabId, pendingCloseTabId)
+      setActiveTabId(next.activeTabId)
+      return next.tabs
+    })
+    setPendingCloseTabId(null)
+  }, [pendingCloseTabId, activeTabId])
+
+  const handleCancelClosePendingTab = useCallback(() => {
+    setPendingCloseTabId(null)
+  }, [])
 
   const handleRequestChange = useCallback(
     (nextReq: HttpRequest) => {
@@ -730,6 +798,19 @@ export function NoddApp() {
             collections={collections}
             onSelectRequest={handleSelectRequest}
             currentRequest={currentRequest}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Unsaved Changes Confirmation Dialog */}
+      <AnimatePresence initial={false}>
+        {pendingCloseTabId !== null && (
+          <UnsavedChangesModal
+            isOpen={pendingCloseTabId !== null}
+            tabName={pendingCloseTabName}
+            onSave={handleSaveAndClosePendingTab}
+            onDiscard={handleDiscardAndClosePendingTab}
+            onCancel={handleCancelClosePendingTab}
           />
         )}
       </AnimatePresence>

@@ -146,7 +146,7 @@ export function TabBar({
 
               {/* Close Button */}
               <Button
-                testId={`close-tab-${tab.id}`}
+                testId={isActive ? 'close-active-tab' : `close-tab-${tab.id}`}
                 onClick={() => onCloseTab(tab.id)}
                 style={{
                   display: 'flex',

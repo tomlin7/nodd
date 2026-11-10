@@ -215,4 +215,63 @@ describeNative('Screen Transitions Automation', () => {
 
     await app.close()
   })
+
+  it('prompts confirmation modal when closing a dirty tab and discards cleanly', async () => {
+    const { render, renderer } = createTestRoot({ width: 1200, height: 800 })
+    render(<NoddApp />)
+    const app = await connectTest(renderer)
+
+    // 1. Add a parameter row to make tab dirty
+    const addRowBtn = app.getByTestId('add-row-button')
+    await addRowBtn.waitFor({ timeoutMs: 3000 })
+    const addBounds = await addRowBtn.bounds()
+    await app.mouse.down({ x: addBounds.x + addBounds.width / 2, y: addBounds.y + addBounds.height / 2 })
+    await app.mouse.up({ x: addBounds.x + addBounds.width / 2, y: addBounds.y + addBounds.height / 2 })
+
+    await new Promise((r) => setTimeout(r, 200))
+
+    // 2. Click the close button on the active tab
+    const closeBtn = app.getByTestId('close-active-tab')
+    await closeBtn.waitFor({ timeoutMs: 3000 })
+    const cBounds = await closeBtn.bounds()
+    await app.mouse.down({ x: cBounds.x + cBounds.width / 2, y: cBounds.y + cBounds.height / 2 })
+    await app.mouse.up({ x: cBounds.x + cBounds.width / 2, y: cBounds.y + cBounds.height / 2 })
+
+    await new Promise((r) => setTimeout(r, 250))
+
+    // 3. Verify unsaved changes modal is displayed
+    const modal = app.getByTestId('unsaved-changes-modal')
+    await modal.waitFor({ timeoutMs: 3000 })
+    expect(modal).toBeDefined()
+
+    // 4. Click Cancel button: modal closes and tab remains open
+    const cancelBtn = app.getByTestId('cancel-discard-button')
+    await cancelBtn.waitFor({ timeoutMs: 3000 })
+    const cancelBounds = await cancelBtn.bounds()
+    await app.mouse.down({ x: cancelBounds.x + cancelBounds.width / 2, y: cancelBounds.y + cancelBounds.height / 2 })
+    await app.mouse.up({ x: cancelBounds.x + cancelBounds.width / 2, y: cancelBounds.y + cancelBounds.height / 2 })
+
+    await new Promise((r) => setTimeout(r, 250))
+
+    // 5. Click close again, then click Don't Save (discard)
+    await app.mouse.down({ x: cBounds.x + cBounds.width / 2, y: cBounds.y + cBounds.height / 2 })
+    await app.mouse.up({ x: cBounds.x + cBounds.width / 2, y: cBounds.y + cBounds.height / 2 })
+
+    await new Promise((r) => setTimeout(r, 250))
+
+    const discardBtn = app.getByTestId('confirm-discard-button')
+    await discardBtn.waitFor({ timeoutMs: 3000 })
+    const discardBounds = await discardBtn.bounds()
+    await app.mouse.down({ x: discardBounds.x + discardBounds.width / 2, y: discardBounds.y + discardBounds.height / 2 })
+    await app.mouse.up({ x: discardBounds.x + discardBounds.width / 2, y: discardBounds.y + discardBounds.height / 2 })
+
+    await new Promise((r) => setTimeout(r, 250))
+
+    // 6. Verify empty workbench screen is now rendered (since the only tab was closed)
+    const emptyWorkbench = app.getByTestId('empty-workbench')
+    await emptyWorkbench.waitFor({ timeoutMs: 3000 })
+    expect(emptyWorkbench).toBeDefined()
+
+    await app.close()
+  })
 })
