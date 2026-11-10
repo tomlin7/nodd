@@ -127,4 +127,49 @@ describe('cURL Parser & Snippet Generator', () => {
     const pythonSnippet = generatePythonSnippet(req)
     expect(pythonSnippet).toContain('url = "https://api.example.com/users/42/posts/99"')
   })
+
+  test('parses curl command with multipart -F flags into formDataParams', () => {
+    const cmd = 'curl -X POST https://api.example.com/upload -F "title=My Photo" -F "image=@/tmp/photo.jpg"'
+    const req = parseCurlCommand(cmd)
+    expect(req).not.toBeNull()
+    if (!req || !req.body) return
+    expect(req.method).toBe('POST')
+    expect(req.body.type).toBe('form-data')
+    expect(req.body.formDataParams).toHaveLength(2)
+    expect(req.body.formDataParams?.[0]).toMatchObject({ key: 'title', value: 'My Photo', type: 'text', enabled: true })
+    expect(req.body.formDataParams?.[1]).toMatchObject({ key: 'image', value: '/tmp/photo.jpg', type: 'file', enabled: true })
+  })
+
+  test('generates curl, fetch, and python snippets for multipart form-data', () => {
+    const req: HttpRequest = {
+      id: 'test_fd',
+      name: 'Upload',
+      method: 'POST',
+      url: 'https://api.example.com/upload',
+      params: [],
+      headers: [],
+      body: {
+        type: 'form-data',
+        formDataParams: [
+          { id: '1', key: 'username', value: 'alice', type: 'text', enabled: true },
+          { id: '2', key: 'avatar', value: '/tmp/avatar.png', type: 'file', enabled: true },
+        ],
+      },
+      auth: { type: 'none' },
+    }
+
+    const curl = generateCurlSnippet(req)
+    expect(curl).toContain('-F "username=alice"')
+    expect(curl).toContain('-F "avatar=@/tmp/avatar.png"')
+
+    const fetchSnippet = generateFetchSnippet(req)
+    expect(fetchSnippet).toContain('const formData = new FormData()')
+    expect(fetchSnippet).toContain('formData.append("username", "alice")')
+
+    const pythonSnippet = generatePythonSnippet(req)
+    expect(pythonSnippet).toContain('data = {')
+    expect(pythonSnippet).toContain('"username": "alice"')
+    expect(pythonSnippet).toContain('files = {')
+    expect(pythonSnippet).toContain('"avatar": open("/tmp/avatar.png", "rb")')
+  })
 })

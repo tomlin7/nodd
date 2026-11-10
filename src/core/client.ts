@@ -1,3 +1,5 @@
+import fs from 'fs'
+import path from 'path'
 import type { Environment, HttpRequest, HttpResponse } from './types'
 import { buildUrlWithParams, interpolatePathVariables } from './url'
 import { interpolateRequest } from './variables'
@@ -79,6 +81,23 @@ export async function executeRequest(
         if (!headers.has('Content-Type')) {
           headers.set('Content-Type', 'application/x-www-form-urlencoded')
         }
+      } else if (req.body.type === 'form-data' && req.body.formDataParams) {
+        const form = new FormData()
+        for (const p of req.body.formDataParams) {
+          if (p.enabled && p.key.trim().length > 0) {
+            if (p.type === 'file' && p.value && fs.existsSync(p.value)) {
+              const fileBuf = fs.readFileSync(p.value)
+              const fileName = path.basename(p.value)
+              const blob = new Blob([fileBuf])
+              form.append(p.key.trim(), blob, fileName)
+            } else {
+              form.append(p.key.trim(), p.value ?? '')
+            }
+          }
+        }
+        bodyPayload = form
+        // Let the fetch runtime automatically set the Content-Type with boundary
+        headers.delete('content-type')
       }
     }
 

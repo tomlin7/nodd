@@ -26,6 +26,7 @@ export interface PostmanRequestObject {
     mode?: string
     raw?: string
     urlencoded?: Array<{ key?: string; value?: string; disabled?: boolean }>
+    formdata?: Array<{ key?: string; value?: string; src?: string; type?: string; disabled?: boolean; description?: string }>
   }
   auth?: {
     type?: string
@@ -130,6 +131,20 @@ function parsePostmanBody(bodyInput?: PostmanRequestObject['body']): BodyConfig 
         key: f.key ?? '',
         value: f.value ?? '',
         enabled: f.disabled !== true,
+      })),
+    }
+  }
+
+  if (mode === 'formdata' && Array.isArray(bodyInput.formdata)) {
+    return {
+      type: 'form-data',
+      formDataParams: bodyInput.formdata.map((f) => ({
+        id: createId('form'),
+        key: f.key ?? '',
+        value: (f.type === 'file' ? f.src : f.value) ?? '',
+        type: (f.type === 'file' ? 'file' : 'text') as 'text' | 'file',
+        enabled: f.disabled !== true,
+        description: f.description,
       })),
     }
   }
@@ -319,6 +334,18 @@ function serializeHttpRequestToPostman(req: HttpRequest): PostmanItemObject {
         key: f.key,
         value: f.value,
         disabled: !f.enabled,
+      })),
+    }
+  } else if (req.body.type === 'form-data' && req.body.formDataParams) {
+    body = {
+      mode: 'formdata',
+      formdata: req.body.formDataParams.map((f) => ({
+        key: f.key,
+        value: f.type === 'file' ? undefined : f.value,
+        src: f.type === 'file' ? f.value : undefined,
+        type: f.type || 'text',
+        disabled: !f.enabled,
+        description: f.description,
       })),
     }
   }
