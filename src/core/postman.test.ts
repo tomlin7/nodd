@@ -157,4 +157,41 @@ describe('Postman v2.1 Import & Export Engine', () => {
       'Invalid JSON format: Could not parse Postman collection.'
     )
   })
+
+  test('imports and exports multipart formdata body in Postman v2.1 schema', () => {
+    const postmanJson = JSON.stringify({
+      info: { name: 'Formdata Collection', schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json' },
+      item: [
+        {
+          name: 'Upload File',
+          request: {
+            method: 'POST',
+            url: 'https://api.example.com/upload',
+            body: {
+              mode: 'formdata',
+              formdata: [
+                { key: 'description', value: 'My Document', type: 'text' },
+                { key: 'attachment', src: '/documents/doc.pdf', type: 'file' },
+              ],
+            },
+          },
+        },
+      ],
+    })
+
+    const col = importPostmanCollection(postmanJson)
+    expect(col.requests.length).toBe(1)
+    const req = col.requests[0]
+    expect(req.body.type).toBe('form-data')
+    expect(req.body.formDataParams?.length).toBe(2)
+    expect(req.body.formDataParams?.[0]).toMatchObject({ key: 'description', value: 'My Document', type: 'text', enabled: true })
+    expect(req.body.formDataParams?.[1]).toMatchObject({ key: 'attachment', value: '/documents/doc.pdf', type: 'file', enabled: true })
+
+    const exported = JSON.parse(exportPostmanCollection(col))
+    const itemReq = exported.item[0].request
+    expect(itemReq.body.mode).toBe('formdata')
+    expect(itemReq.body.formdata).toHaveLength(2)
+    expect(itemReq.body.formdata[0]).toEqual({ key: 'description', value: 'My Document', type: 'text', disabled: false })
+    expect(itemReq.body.formdata[1]).toEqual({ key: 'attachment', src: '/documents/doc.pdf', type: 'file', disabled: false })
+  })
 })

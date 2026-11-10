@@ -106,4 +106,40 @@ describe('Request Builder Logic', () => {
     const updated: HttpRequest = { ...req, method: 'POST' }
     expect(updated.method).toBe('POST')
   })
+
+  it('supports multipart form-data body configuration with text and file parameters', () => {
+    let req: HttpRequest = {
+      id: 'req_formdata',
+      name: 'Formdata Test',
+      method: 'POST',
+      url: 'https://api.test/upload',
+      params: [],
+      headers: [],
+      body: {
+        type: 'form-data',
+        formDataParams: [
+          { id: 'fd1', key: 'username', value: 'bob', type: 'text', enabled: true },
+          { id: 'fd2', key: 'file', value: '/path/to/test.png', type: 'file', enabled: true },
+        ],
+      },
+      auth: { type: 'none' },
+    }
+
+    expect(req.body.type).toBe('form-data')
+    expect(req.body.formDataParams?.length).toBe(2)
+    expect(req.body.formDataParams?.[0].type).toBe('text')
+    expect(req.body.formDataParams?.[1].type).toBe('file')
+
+    // Toggling type
+    req = {
+      ...req,
+      body: {
+        ...req.body,
+        formDataParams: req.body.formDataParams?.map((p) =>
+          p.id === 'fd1' ? { ...p, type: 'file' } : p
+        ),
+      },
+    }
+    expect(req.body.formDataParams?.[0].type).toBe('file')
+  })
 })

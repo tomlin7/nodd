@@ -1,4 +1,4 @@
-import type { Environment, HttpRequest, KeyValuePair } from './types'
+import type { Environment, FormDataParam, HttpRequest, KeyValuePair } from './types'
 
 /**
  * Replaces {{varName}} placeholders with values from the environment's variables dictionary.
@@ -43,6 +43,7 @@ export function interpolateRequest(req: HttpRequest, env?: Environment | null): 
       ...req.body,
       rawText: req.body.rawText ? interpolateString(req.body.rawText, vars) : undefined,
       formParams: req.body.formParams ? interpolatePairs(req.body.formParams, vars) : undefined,
+      formDataParams: req.body.formDataParams ? (interpolatePairs(req.body.formDataParams, vars) as FormDataParam[]) : undefined,
     },
     auth: {
       ...req.auth,

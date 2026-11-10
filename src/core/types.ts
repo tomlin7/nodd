@@ -8,6 +8,10 @@ export interface KeyValuePair {
   description?: string
 }
 
+export interface FormDataParam extends KeyValuePair {
+  type?: 'text' | 'file'
+}
+
 export type AuthType = 'none' | 'bearer' | 'basic' | 'apikey'
 
 export interface AuthConfig {
@@ -20,12 +24,13 @@ export interface AuthConfig {
   apiKeyIn?: 'header' | 'query'
 }
 
-export type BodyType = 'none' | 'json' | 'raw' | 'x-www-form-urlencoded'
+export type BodyType = 'none' | 'json' | 'raw' | 'x-www-form-urlencoded' | 'form-data'
 
 export interface BodyConfig {
   type: BodyType
   rawText?: string
   formParams?: KeyValuePair[]
+  formDataParams?: FormDataParam[]
 }
 
 export type AssertionType =

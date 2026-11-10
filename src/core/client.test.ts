@@ -1,3 +1,6 @@
+import fs from 'fs'
+import path from 'path'
+import os from 'os'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { executeRequest } from './client'
 import type { HttpRequest } from './types'
@@ -38,6 +41,17 @@ describe('HTTP Client Engine', () => {
 
         if (url.pathname.startsWith('/users/')) {
           return new Response(JSON.stringify({ path: url.pathname }), {
+            headers: { 'Content-Type': 'application/json' },
+          })
+        }
+
+        if (url.pathname === '/echo-formdata') {
+          const form = await req.formData()
+          const data: Record<string, string> = {}
+          for (const [k, v] of form.entries()) {
+            data[k] = typeof v === 'string' ? v : await (v as Blob).text()
+          }
+          return new Response(JSON.stringify(data), {
             headers: { 'Content-Type': 'application/json' },
           })
         }
@@ -158,5 +172,39 @@ describe('HTTP Client Engine', () => {
     expect(res.status).toBe(0)
     expect(res.statusText).toBe('Timed Out')
     expect(res.error).toContain('exceeded timeout')
+  })
+
+  it('executes a POST request with multipart/form-data body including text and file fields', async () => {
+    const tmpFile = path.join(os.tmpdir(), 'nodd-test-upload.txt')
+    fs.writeFileSync(tmpFile, 'binary content inside file', 'utf8')
+
+    try {
+      const req: HttpRequest = {
+        id: 'req_multipart',
+        name: 'Test Multipart',
+        method: 'POST',
+        url: `${serverUrl}/echo-formdata`,
+        params: [],
+        headers: [{ id: 'h1', key: 'Content-Type', value: 'multipart/form-data', enabled: true }],
+        body: {
+          type: 'form-data',
+          formDataParams: [
+            { id: 'f1', key: 'username', value: 'alice', type: 'text', enabled: true },
+            { id: 'f2', key: 'disabled_field', value: 'skip', type: 'text', enabled: false },
+            { id: 'f3', key: 'document', value: tmpFile, type: 'file', enabled: true },
+          ],
+        },
+        auth: { type: 'none' },
+      }
+
+      const res = await executeRequest(req)
+      expect(res.status).toBe(200)
+      const json = JSON.parse(res.body)
+      expect(json.username).toBe('alice')
+      expect(json.disabled_field).toBeUndefined()
+      expect(json.document).toBe('binary content inside file')
+    } finally {
+      if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile)
+    }
   })
 })

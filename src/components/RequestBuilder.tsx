@@ -818,6 +818,7 @@ function BodyPane({
     { id: 'json', label: 'JSON' },
     { id: 'raw', label: 'Raw Text' },
     { id: 'x-www-form-urlencoded', label: 'Form URL-Encoded' },
+    { id: 'form-data', label: 'Multipart Form' },
   ]
 
   return (
@@ -931,6 +932,17 @@ function BodyPane({
           keyPlaceholder="Field"
           valuePlaceholder="Value"
           emptyLabel="No form fields defined"
+        />
+      )}
+
+      {body.type === 'form-data' && (
+        <KeyValueTable
+          pairs={body.formDataParams ?? []}
+          onChange={(nextParams) => onChange({ ...body, formDataParams: nextParams })}
+          keyPlaceholder="Field Name"
+          valuePlaceholder="Value or file path"
+          emptyLabel="No multipart form fields defined"
+          showTypeSelector
         />
       )}
     </div>

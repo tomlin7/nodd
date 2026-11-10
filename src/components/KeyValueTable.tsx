@@ -5,7 +5,7 @@ import { C, FONT_MONO, FONT_SANS } from '../theme'
 import type { KeyValuePair } from '../core/types'
 import { createId } from '../core/url'
 
-export function KeyValueTable({
+export function KeyValueTable<T extends KeyValuePair = KeyValuePair>({
   pairs,
   onChange,
   keyPlaceholder = 'Key',
@@ -14,17 +14,19 @@ export function KeyValueTable({
   allowAdd = true,
   readOnlyKeys = false,
   disableDelete = false,
+  showTypeSelector = false,
 }: {
-  pairs: KeyValuePair[]
-  onChange: (next: KeyValuePair[]) => void
+  pairs: T[]
+  onChange: (next: T[]) => void
   keyPlaceholder?: string
   valuePlaceholder?: string
   emptyLabel?: string
   allowAdd?: boolean
   readOnlyKeys?: boolean
   disableDelete?: boolean
+  showTypeSelector?: boolean
 }) {
-  const updatePair = (id: string, partial: Partial<KeyValuePair>) => {
+  const updatePair = (id: string, partial: Record<string, any>) => {
     onChange(
       pairs.map((p) => (p.id === id ? { ...p, ...partial } : p))
     )
@@ -42,7 +44,8 @@ export function KeyValueTable({
         key: '',
         value: '',
         enabled: true,
-      },
+        ...(showTypeSelector ? { type: 'text' } : {}),
+      } as unknown as T,
     ])
   }
 
@@ -81,6 +84,21 @@ export function KeyValueTable({
             KEY
           </text>
         </div>
+        {showTypeSelector && (
+          <div style={{ width: 50, flexShrink: 0 }}>
+            <text
+              style={{
+                fontSize: 12,
+                fontFamily: FONT_SANS,
+                fontWeight: '600',
+                color: C.tertiary,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              TYPE
+            </text>
+          </div>
+        )}
         <div style={{ flexGrow: 1, minWidth: 0 }}>
           <text
             style={{
@@ -209,12 +227,47 @@ export function KeyValueTable({
               )}
             </div>
 
+            {/* Type Selector */}
+            {showTypeSelector && (
+              <Button
+                testId={`type-${pair.id}`}
+                onClick={() => {
+                  const currentType = (pair as any).type === 'file' ? 'text' : 'file'
+                  updatePair(pair.id, { type: currentType })
+                }}
+                style={{
+                  width: 50,
+                  height: 24,
+                  borderRadius: 4,
+                  backgroundColor: (pair as any).type === 'file' ? '#3B2D54' : '#25252B',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  hover: { backgroundColor: (pair as any).type === 'file' ? '#4C3A6C' : '#323238' },
+                }}
+              >
+                <text
+                  style={{
+                    fontSize: 11,
+                    fontFamily: FONT_SANS,
+                    fontWeight: '600',
+                    color: (pair as any).type === 'file' ? '#C084FC' : C.secondary,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {(pair as any).type === 'file' ? 'File' : 'Text'}
+                </text>
+              </Button>
+            )}
+
             {/* Value Input */}
             <div style={{ flexGrow: 1, minWidth: 0 }}>
               <input
                 testId={`val-${pair.id}`}
                 value={pair.value}
-                placeholder={valuePlaceholder}
+                placeholder={(pair as any).type === 'file' ? 'File path...' : valuePlaceholder}
                 theme={{ text: C.text, textMuted: C.secondary, textFaint: C.tertiary }}
                 style={{
                   width: '100%',
