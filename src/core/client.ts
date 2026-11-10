@@ -1,5 +1,5 @@
 import type { Environment, HttpRequest, HttpResponse } from './types'
-import { buildUrlWithParams } from './url'
+import { buildUrlWithParams, interpolatePathVariables } from './url'
 import { interpolateRequest } from './variables'
 
 export interface ExecuteOptions {
@@ -24,8 +24,9 @@ export async function executeRequest(
   const startTime = performance.now()
 
   try {
-    // 1. Build Final URL
-    let finalUrl = buildUrlWithParams(req.url, req.params)
+    // 1. Build Final URL (Interpolating path variables first, then query parameters)
+    const urlWithPathVars = interpolatePathVariables(req.url, req.pathVariables)
+    let finalUrl = buildUrlWithParams(urlWithPathVars, req.params)
     if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
       finalUrl = `https://${finalUrl}`
     }

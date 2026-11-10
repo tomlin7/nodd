@@ -7,6 +7,7 @@ export function serializeRequest(req: HttpRequest): string {
     method: req.method,
     url: req.url,
     params: req.params.map((p) => ({ key: p.key, value: p.value, enabled: p.enabled })),
+    pathVariables: (req.pathVariables || []).map((p) => ({ key: p.key, value: p.value, enabled: p.enabled })),
     headers: req.headers.map((h) => ({ key: h.key, value: h.value, enabled: h.enabled })),
     body: req.body,
     auth: req.auth,

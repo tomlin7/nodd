@@ -54,6 +54,7 @@ export interface HttpRequest {
   method: HttpMethod
   url: string
   params: KeyValuePair[]
+  pathVariables?: KeyValuePair[]
   headers: KeyValuePair[]
   body: BodyConfig
   auth: AuthConfig

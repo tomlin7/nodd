@@ -43,6 +43,7 @@ export function createInitialRequest(collectionId?: string): HttpRequest {
     method: 'GET',
     url: 'https://jsonplaceholder.typicode.com/posts',
     params: [],
+    pathVariables: [],
     headers: [
       { id: createId('header'), key: 'Accept', value: 'application/json', enabled: true },
     ],
