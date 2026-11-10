@@ -6,7 +6,7 @@ import { KeyValueTable } from './KeyValueTable'
 import { C, FONT_MONO, FONT_SANS } from '../theme'
 import type { AssertionType, AuthType, BodyType, HttpMethod, HttpRequest, KeyValuePair, RequestAssertion } from '../core/types'
 import { createAssertion, formatAssertionLabel } from '../core/tests'
-import { buildUrlWithParams, parseUrlParams } from '../core/url'
+import { buildUrlWithParams, parseUrlParams, syncPathVariables } from '../core/url'
 import { parseCurlCommand } from '../core/curl'
 
 const METHODS: HttpMethod[] = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS']
@@ -33,30 +33,38 @@ export function RequestBuilder({
 
   const methodColor = C.methods[request.method] || C.accent
 
-  // URL Input Handler (syncs query params to request.params)
+  // Path variables derived and kept in sync with URL
+  const pathVariables = request.pathVariables ?? syncPathVariables(request.url, [])
+
+  // URL Input Handler (syncs query params and path variables)
   const handleUrlChange = (newUrl: string) => {
     if (newUrl.trim().toLowerCase().startsWith('curl')) {
       const parsed = parseCurlCommand(newUrl)
       if (parsed) {
+        const nextPathVars = syncPathVariables(parsed.url || '', request.pathVariables)
         onChange({
           ...request,
           ...parsed,
+          pathVariables: nextPathVars,
           name: request.name === 'New Request' ? 'Imported cURL' : request.name,
         })
         return
       }
     }
+    const nextPathVars = syncPathVariables(newUrl, request.pathVariables)
     if (newUrl.includes('?')) {
       const { params } = parseUrlParams(newUrl)
       onChange({
         ...request,
         url: newUrl,
         params,
+        pathVariables: nextPathVars,
       })
     } else {
       onChange({
         ...request,
         url: newUrl,
+        pathVariables: nextPathVars,
       })
     }
   }
@@ -68,6 +76,14 @@ export function RequestBuilder({
       ...request,
       url: nextUrl,
       params: nextParams,
+    })
+  }
+
+  // Path Variables Handler
+  const handlePathVariablesChange = (nextPathVars: KeyValuePair[]) => {
+    onChange({
+      ...request,
+      pathVariables: nextPathVars,
     })
   }
 
@@ -91,6 +107,8 @@ export function RequestBuilder({
   }
 
   const activeParamsCount = request.params.filter((p) => p.enabled && p.key.trim().length > 0).length
+  const activePathVarsCount = pathVariables.filter((p) => p.enabled && p.value.trim().length > 0).length
+  const totalParamsCount = activeParamsCount + activePathVarsCount
   const activeHeadersCount = request.headers.filter((h) => h.enabled && h.key.trim().length > 0).length
 
   return (
@@ -354,7 +372,7 @@ export function RequestBuilder({
       >
         <TabButton
           label="Params"
-          count={activeParamsCount}
+          count={totalParamsCount}
           active={activeTab === 'params'}
           testId="tab-params"
           onClick={() => setActiveTab('params')}
@@ -406,13 +424,68 @@ export function RequestBuilder({
             )}
 
             {activeTab === 'params' && (
-              <KeyValueTable
-                pairs={request.params}
-                onChange={handleParamsChange}
-                keyPlaceholder="Parameter"
-                valuePlaceholder="Value"
-                emptyLabel="No query parameters defined"
-              />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {/* Query Parameters Section */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <text style={{ fontSize: 11, fontWeight: '700', fontFamily: FONT_SANS, color: C.secondary }}>
+                      QUERY PARAMETERS
+                    </text>
+                    {activeParamsCount > 0 && (
+                      <text style={{ fontSize: 11, fontFamily: FONT_MONO, color: C.tertiary }}>
+                        {`${activeParamsCount} active`}
+                      </text>
+                    )}
+                  </div>
+                  <KeyValueTable
+                    pairs={request.params}
+                    onChange={handleParamsChange}
+                    keyPlaceholder="Parameter"
+                    valuePlaceholder="Value"
+                    emptyLabel="No query parameters defined"
+                  />
+                </div>
+
+                {/* Path Variables Section (Auto-detected from URL path) */}
+                {pathVariables.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
+                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <text style={{ fontSize: 11, fontWeight: '700', fontFamily: FONT_SANS, color: C.secondary }}>
+                          PATH VARIABLES
+                        </text>
+                        <div
+                          style={{
+                            backgroundColor: C.surfaceHighlight,
+                            borderRadius: 4,
+                            paddingLeft: 6,
+                            paddingRight: 6,
+                            paddingTop: 1,
+                            paddingBottom: 1,
+                          }}
+                        >
+                          <text style={{ fontSize: 10.5, fontFamily: FONT_MONO, fontWeight: '600', color: C.accent }}>
+                            {`${pathVariables.length}`}
+                          </text>
+                        </div>
+                      </div>
+                      <text style={{ fontSize: 11, fontFamily: FONT_SANS, color: C.tertiary }}>
+                        Auto-detected from URL path (:param or {'{param}'})
+                      </text>
+                    </div>
+                    <KeyValueTable
+                      pairs={pathVariables}
+                      onChange={handlePathVariablesChange}
+                      keyPlaceholder="Variable"
+                      valuePlaceholder="Value"
+                      emptyLabel="No path variables in URL"
+                      allowAdd={false}
+                      readOnlyKeys={true}
+                      disableDelete={true}
+                    />
+                  </div>
+                )}
+              </div>
             )}
 
             {activeTab === 'headers' && (

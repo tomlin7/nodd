@@ -37,6 +37,7 @@ export function interpolateRequest(req: HttpRequest, env?: Environment | null): 
     ...req,
     url: interpolateString(req.url, vars),
     params: interpolatePairs(req.params, vars),
+    pathVariables: req.pathVariables ? interpolatePairs(req.pathVariables, vars) : undefined,
     headers: interpolatePairs(req.headers, vars),
     body: {
       ...req.body,

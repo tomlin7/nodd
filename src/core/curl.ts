@@ -1,5 +1,5 @@
 import type { Environment, HttpMethod, HttpRequest, KeyValuePair } from './types'
-import { createId, parseUrlParams } from './url'
+import { createId, interpolatePathVariables, parseUrlParams } from './url'
 import { interpolateString } from './variables'
 
 /**
@@ -169,7 +169,7 @@ export function parseCurlCommand(input: string): Partial<HttpRequest> | null {
  * Generates an executable cURL snippet from an HttpRequest
  */
 export function generateCurlSnippet(req: HttpRequest, env?: Environment | null): string {
-  let url = req.url
+  let url = interpolatePathVariables(req.url, req.pathVariables)
   if (req.params.length > 0) {
     const activeParams = req.params.filter((p) => p.enabled && p.key.trim().length > 0)
     if (activeParams.length > 0) {
@@ -230,7 +230,7 @@ export function generateCurlSnippet(req: HttpRequest, env?: Environment | null):
  * Generates an executable JavaScript fetch snippet
  */
 export function generateFetchSnippet(req: HttpRequest, env?: Environment | null): string {
-  let url = req.url
+  let url = interpolatePathVariables(req.url, req.pathVariables)
   if (req.params.length > 0) {
     const activeParams = req.params.filter((p) => p.enabled && p.key.trim().length > 0)
     if (activeParams.length > 0) {
@@ -289,7 +289,7 @@ export function generateFetchSnippet(req: HttpRequest, env?: Environment | null)
  * Generates an executable Python requests snippet
  */
 export function generatePythonSnippet(req: HttpRequest, env?: Environment | null): string {
-  let url = req.url
+  let url = interpolatePathVariables(req.url, req.pathVariables)
   const lines = ['import requests\n']
   lines.push(`url = "${env ? interpolateString(url, env.variables) : url}"`)
 

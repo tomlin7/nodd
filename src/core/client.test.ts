@@ -36,6 +36,12 @@ describe('HTTP Client Engine', () => {
           })
         }
 
+        if (url.pathname.startsWith('/users/')) {
+          return new Response(JSON.stringify({ path: url.pathname }), {
+            headers: { 'Content-Type': 'application/json' },
+          })
+        }
+
         if (url.pathname === '/delay') {
           await new Promise((r) => setTimeout(r, 100))
           return new Response('delayed')
@@ -72,6 +78,27 @@ describe('HTTP Client Engine', () => {
     expect(res.timeMs).toBeGreaterThan(0)
     const json = JSON.parse(res.body)
     expect(json).toEqual({ search: 'banana' })
+  })
+
+  it('executes a request with path variables correctly interpolated', async () => {
+    const req: HttpRequest = {
+      id: 'req_path_vars',
+      name: 'Test Path Variables',
+      method: 'GET',
+      url: `${serverUrl}/users/:userId/profile`,
+      params: [],
+      pathVariables: [
+        { id: 'pv1', key: 'userId', value: '42', enabled: true },
+      ],
+      headers: [],
+      body: { type: 'none' },
+      auth: { type: 'none' },
+    }
+
+    const res = await executeRequest(req)
+    expect(res.status).toBe(200)
+    const json = JSON.parse(res.body)
+    expect(json.path).toBe('/users/42/profile')
   })
 
   it('executes a POST request with JSON body and custom headers', async () => {
@@ -111,6 +138,7 @@ describe('HTTP Client Engine', () => {
     const json = JSON.parse(res.body)
     expect(json.auth).toBe('Bearer secret-token-xyz')
     expect(json.custom).toBe('alpha')
+    expect(res.headers['x-response-test']).toBe('pass')
   })
 
   it('captures network failure and timeouts cleanly', async () => {
@@ -129,6 +157,6 @@ describe('HTTP Client Engine', () => {
     const res = await executeRequest(req, { timeoutMs: 20 })
     expect(res.status).toBe(0)
     expect(res.statusText).toBe('Timed Out')
-    expect(res.error).toBeDefined()
+    expect(res.error).toContain('exceeded timeout')
   })
 })

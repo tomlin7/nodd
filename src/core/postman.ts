@@ -7,14 +7,15 @@ import type {
   HttpRequest,
   KeyValuePair,
 } from './types'
-import { createId, parseUrlParams } from './url'
+import { createId, parseUrlParams, syncPathVariables } from './url'
 
 export interface PostmanUrlObject {
   raw?: string
   protocol?: string
   host?: string[]
   path?: string[]
-  query?: Array<{ key?: string; value?: string; disabled?: boolean }>
+  query?: Array<{ key?: string; value?: string; disabled?: boolean; description?: string }>
+  variable?: Array<{ key?: string; value?: string; disabled?: boolean; description?: string }>
 }
 
 export interface PostmanRequestObject {
@@ -49,9 +50,13 @@ export interface PostmanCollectionSchema {
   item?: PostmanItemObject[]
 }
 
-function parsePostmanUrl(urlInput?: string | PostmanUrlObject): { url: string; params: KeyValuePair[] } {
+function parsePostmanUrl(urlInput?: string | PostmanUrlObject): {
+  url: string
+  params: KeyValuePair[]
+  pathVariables: KeyValuePair[]
+} {
   if (!urlInput) {
-    return { url: '', params: [] }
+    return { url: '', params: [], pathVariables: [] }
   }
 
   let rawUrl = ''
@@ -62,19 +67,33 @@ function parsePostmanUrl(urlInput?: string | PostmanUrlObject): { url: string; p
   }
 
   const { baseUrl, params } = parseUrlParams(rawUrl)
+  let explicitParams = params
 
   // If query params are explicitly declared in the postman url object
   if (typeof urlInput === 'object' && Array.isArray(urlInput.query) && urlInput.query.length > 0) {
-    const explicitParams: KeyValuePair[] = urlInput.query.map((q) => ({
+    explicitParams = urlInput.query.map((q) => ({
       id: createId('param'),
       key: q.key ?? '',
       value: q.value ?? '',
       enabled: q.disabled !== true,
+      description: q.description,
     }))
-    return { url: baseUrl, params: explicitParams }
   }
 
-  return { url: baseUrl, params }
+  let pathVariables: KeyValuePair[] = []
+  if (typeof urlInput === 'object' && Array.isArray(urlInput.variable) && urlInput.variable.length > 0) {
+    pathVariables = urlInput.variable.map((v) => ({
+      id: createId('pvar'),
+      key: v.key ?? '',
+      value: v.value ?? '',
+      enabled: v.disabled !== true,
+      description: v.description,
+    }))
+  } else {
+    pathVariables = syncPathVariables(rawUrl)
+  }
+
+  return { url: baseUrl, params: explicitParams, pathVariables }
 }
 
 function parsePostmanHeaders(headersInput?: PostmanRequestObject['header']): KeyValuePair[] {
@@ -84,6 +103,7 @@ function parsePostmanHeaders(headersInput?: PostmanRequestObject['header']): Key
     key: h.key ?? '',
     value: h.value ?? '',
     enabled: h.disabled !== true,
+    description: h.description,
   }))
 }
 
@@ -92,7 +112,8 @@ function parsePostmanBody(bodyInput?: PostmanRequestObject['body']): BodyConfig 
     return { type: 'none' }
   }
 
-  if (bodyInput.mode === 'raw') {
+  const mode = bodyInput.mode
+  if (mode === 'raw') {
     const rawText = bodyInput.raw ?? ''
     const isJson = rawText.trim().startsWith('{') || rawText.trim().startsWith('[')
     return {
@@ -101,14 +122,14 @@ function parsePostmanBody(bodyInput?: PostmanRequestObject['body']): BodyConfig 
     }
   }
 
-  if (bodyInput.mode === 'urlencoded' && Array.isArray(bodyInput.urlencoded)) {
+  if (mode === 'urlencoded' && Array.isArray(bodyInput.urlencoded)) {
     return {
       type: 'x-www-form-urlencoded',
-      formParams: bodyInput.urlencoded.map((p) => ({
+      formParams: bodyInput.urlencoded.map((f) => ({
         id: createId('form'),
-        key: p.key ?? '',
-        value: p.value ?? '',
-        enabled: p.disabled !== true,
+        key: f.key ?? '',
+        value: f.value ?? '',
+        enabled: f.disabled !== true,
       })),
     }
   }
@@ -117,7 +138,7 @@ function parsePostmanBody(bodyInput?: PostmanRequestObject['body']): BodyConfig 
 }
 
 function parsePostmanAuth(authInput?: PostmanRequestObject['auth']): AuthConfig {
-  if (!authInput || !authInput.type || authInput.type === 'noauth') {
+  if (!authInput || !authInput.type) {
     return { type: 'none' }
   }
 
@@ -148,7 +169,7 @@ function parsePostmanRequest(
   folderId?: string
 ): HttpRequest {
   const reqObj = item.request ?? {}
-  const { url, params } = parsePostmanUrl(reqObj.url)
+  const { url, params, pathVariables } = parsePostmanUrl(reqObj.url)
   const headers = parsePostmanHeaders(reqObj.header)
   const body = parsePostmanBody(reqObj.body)
   const auth = parsePostmanAuth(reqObj.auth)
@@ -165,6 +186,7 @@ function parsePostmanRequest(
     method,
     url,
     params,
+    pathVariables,
     headers,
     body,
     auth,
@@ -178,80 +200,72 @@ function parsePostmanRequest(
  * Imports a Postman v2.1 Collection JSON string into Nodd Collection data structure
  */
 export function importPostmanCollection(jsonString: string): Collection {
-  let parsed: PostmanCollectionSchema
+  let parsed: any
   try {
     parsed = JSON.parse(jsonString)
   } catch (err: any) {
     throw new Error('Invalid JSON format: Could not parse Postman collection.')
   }
 
-  if (!parsed || typeof parsed !== 'object') {
-    throw new Error('Invalid collection format: Expected a JSON object.')
+  const collectionId = createId('col')
+  const collectionName = parsed.info?.name || 'Imported Postman Collection'
+  const collectionDescription = parsed.info?.description || undefined
+
+  const collection: Collection = {
+    id: collectionId,
+    name: collectionName,
+    description: collectionDescription,
+    folders: [],
+    requests: [],
+    createdAt: Date.now(),
   }
 
-  const collectionId = createId('col')
-  const collectionName = parsed.info?.name?.trim() || 'Imported Postman Collection'
-  const description = parsed.info?.description
+  const rawItems: PostmanItemObject[] = Array.isArray(parsed.item) ? parsed.item : []
 
-  const folders: CollectionFolder[] = []
-  const rootRequests: HttpRequest[] = []
-
-  const items = Array.isArray(parsed.item) ? parsed.item : []
-
-  for (const item of items) {
-    // If it has sub-items, it's a folder
+  for (const item of rawItems) {
+    // If it has 'item' array, it's a folder / subfolder
     if (Array.isArray(item.item)) {
       const folderId = createId('folder')
-      const folderRequests: HttpRequest[] = []
-
-      for (const subItem of item.item) {
-        if (subItem.request) {
-          folderRequests.push(parsePostmanRequest(subItem, collectionId, folderId))
-        }
-      }
-
-      folders.push({
+      const folder: CollectionFolder = {
         id: folderId,
         name: item.name ?? 'Folder',
         collectionId,
-        requests: folderRequests,
-      })
+        requests: [],
+      }
+
+      // Collect all requests inside this folder
+      for (const subItem of item.item) {
+        if (subItem.request) {
+          folder.requests.push(parsePostmanRequest(subItem, collectionId, folderId))
+        }
+      }
+
+      collection.folders.push(folder)
     } else if (item.request) {
-      rootRequests.push(parsePostmanRequest(item, collectionId))
+      // Direct request under collection root
+      collection.requests.push(parsePostmanRequest(item, collectionId))
     }
   }
 
-  return {
-    id: collectionId,
-    name: collectionName,
-    description,
-    folders,
-    requests: rootRequests,
-    createdAt: Date.now(),
-  }
+  return collection
 }
 
 /**
- * Exports a Nodd Collection to a standard Postman Collection v2.1 JSON string
+ * Exports a Nodd Collection to Postman v2.1 schema JSON string
  */
 export function exportPostmanCollection(collection: Collection): string {
   const postmanItems: PostmanItemObject[] = []
 
-  // Add root requests
+  // 1. Add root requests
   for (const req of collection.requests) {
     postmanItems.push(serializeHttpRequestToPostman(req))
   }
 
-  // Add folders and their requests
+  // 2. Add folders with their requests
   for (const folder of collection.folders) {
-    const folderItems: PostmanItemObject[] = []
-    for (const req of folder.requests) {
-      folderItems.push(serializeHttpRequestToPostman(req))
-    }
-
     postmanItems.push({
       name: folder.name,
-      item: folderItems,
+      item: folder.requests.map((req) => serializeHttpRequestToPostman(req)),
     })
   }
 
@@ -325,6 +339,13 @@ function serializeHttpRequestToPostman(req: HttpRequest): PostmanItemObject {
     }
   }
 
+  const variables = (req.pathVariables || []).map((v) => ({
+    key: v.key,
+    value: v.value,
+    disabled: !v.enabled,
+    description: v.description,
+  }))
+
   return {
     name: req.name,
     request: {
@@ -332,6 +353,7 @@ function serializeHttpRequestToPostman(req: HttpRequest): PostmanItemObject {
       url: {
         raw: rawUrl,
         query: queryParams,
+        ...(variables.length > 0 ? { variable: variables } : {}),
       },
       header,
       body,

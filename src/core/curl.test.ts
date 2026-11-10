@@ -101,4 +101,30 @@ describe('cURL Parser & Snippet Generator', () => {
     expect(snippet).toContain('params =')
     expect(snippet).toContain('requests.get(')
   })
+
+  test('interpolates path variables across curl, fetch, and python snippets', () => {
+    const req: HttpRequest = {
+      id: 'test',
+      name: 'Test Path Vars',
+      method: 'GET',
+      url: 'https://api.example.com/users/:userId/posts/{postId}',
+      params: [{ id: 'p1', key: 'include', value: 'comments', enabled: true }],
+      pathVariables: [
+        { id: 'pv1', key: 'userId', value: '42', enabled: true },
+        { id: 'pv2', key: 'postId', value: '99', enabled: true },
+      ],
+      headers: [],
+      body: { type: 'none' },
+      auth: { type: 'none' },
+    }
+
+    const curlSnippet = generateCurlSnippet(req)
+    expect(curlSnippet).toContain('https://api.example.com/users/42/posts/99?include=comments')
+
+    const fetchSnippet = generateFetchSnippet(req)
+    expect(fetchSnippet).toContain('fetch("https://api.example.com/users/42/posts/99?include=comments"')
+
+    const pythonSnippet = generatePythonSnippet(req)
+    expect(pythonSnippet).toContain('url = "https://api.example.com/users/42/posts/99"')
+  })
 })

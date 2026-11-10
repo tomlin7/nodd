@@ -115,6 +115,43 @@ describe('Postman v2.1 Import & Export Engine', () => {
     expect(parsed.item[1].item.length).toBe(1)
   })
 
+  test('imports and exports path variables in Postman url.variable schema', () => {
+    const jsonWithVars = JSON.stringify({
+      info: { name: 'Path Var Collection' },
+      item: [
+        {
+          name: 'Get User By ID',
+          request: {
+            method: 'GET',
+            url: {
+              raw: 'https://api.example.com/users/:userId/orders/{orderId}',
+              variable: [
+                { key: 'userId', value: '42', description: 'User ID' },
+                { key: 'orderId', value: '1001', description: 'Order ID' },
+              ],
+            },
+          },
+        },
+      ],
+    })
+
+    const col = importPostmanCollection(jsonWithVars)
+    expect(col.requests.length).toBe(1)
+    const req = col.requests[0]
+    expect(req.pathVariables?.length).toBe(2)
+    expect(req.pathVariables?.[0].key).toBe('userId')
+    expect(req.pathVariables?.[0].value).toBe('42')
+    expect(req.pathVariables?.[1].key).toBe('orderId')
+    expect(req.pathVariables?.[1].value).toBe('1001')
+
+    const exported = exportPostmanCollection(col)
+    const parsed = JSON.parse(exported)
+    expect(parsed.item[0].request.url.variable).toBeDefined()
+    expect(parsed.item[0].request.url.variable.length).toBe(2)
+    expect(parsed.item[0].request.url.variable[0].key).toBe('userId')
+    expect(parsed.item[0].request.url.variable[0].value).toBe('42')
+  })
+
   test('throws descriptive error on malformed JSON', () => {
     expect(() => importPostmanCollection('invalid json text')).toThrow(
       'Invalid JSON format: Could not parse Postman collection.'

@@ -28,6 +28,22 @@ export function createDefaultCollection(): Collection {
             params: [
               { id: createId('param'), key: '_limit', value: '5', enabled: true },
             ],
+            pathVariables: [],
+            headers: [
+              { id: createId('header'), key: 'Accept', value: 'application/json', enabled: true },
+            ],
+            body: { type: 'none' },
+            auth: { type: 'none' },
+          },
+          {
+            id: createId('req'),
+            name: 'Get User by ID',
+            method: 'GET',
+            url: 'https://jsonplaceholder.typicode.com/users/:id',
+            params: [],
+            pathVariables: [
+              { id: createId('pvar'), key: 'id', value: '1', enabled: true },
+            ],
             headers: [
               { id: createId('header'), key: 'Accept', value: 'application/json', enabled: true },
             ],
@@ -40,6 +56,7 @@ export function createDefaultCollection(): Collection {
             method: 'POST',
             url: 'https://jsonplaceholder.typicode.com/users',
             params: [],
+            pathVariables: [],
             headers: [
               { id: createId('header'), key: 'Content-Type', value: 'application/json', enabled: true },
             ],
@@ -59,6 +76,7 @@ export function createDefaultCollection(): Collection {
         method: 'GET',
         url: 'https://httpbin.org/headers',
         params: [],
+        pathVariables: [],
         headers: [
           { id: createId('header'), key: 'User-Agent', value: 'Nodd/0.1.0', enabled: true },
         ],
