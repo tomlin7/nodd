@@ -59,4 +59,34 @@ describe('Variable Interpolation', () => {
     expect(res.body.rawText).toBe('{"auth": "xyz-token"}')
     expect(res.auth.bearerToken).toBe('xyz-token')
   })
+
+  it('interpolates GraphQL query and variables', () => {
+    const env: Environment = {
+      id: 'env_gql',
+      name: 'GQL Env',
+      variables: {
+        userId: 'u_100',
+        field: 'email',
+      },
+    }
+
+    const req: HttpRequest = {
+      id: 'req_gql',
+      name: 'GQL Req',
+      method: 'POST',
+      url: 'https://api.test/graphql',
+      params: [],
+      headers: [],
+      body: {
+        type: 'graphql',
+        graphqlQuery: 'query { user { id {{field}} } }',
+        graphqlVariables: '{"targetId": "{{userId}}"}',
+      },
+      auth: { type: 'none' },
+    }
+
+    const res = interpolateRequest(req, env)
+    expect(res.body.graphqlQuery).toBe('query { user { id email } }')
+    expect(res.body.graphqlVariables).toBe('{"targetId": "u_100"}')
+  })
 })

@@ -24,13 +24,15 @@ export interface AuthConfig {
   apiKeyIn?: 'header' | 'query'
 }
 
-export type BodyType = 'none' | 'json' | 'raw' | 'x-www-form-urlencoded' | 'form-data'
+export type BodyType = 'none' | 'json' | 'raw' | 'x-www-form-urlencoded' | 'form-data' | 'graphql'
 
 export interface BodyConfig {
   type: BodyType
   rawText?: string
   formParams?: KeyValuePair[]
   formDataParams?: FormDataParam[]
+  graphqlQuery?: string
+  graphqlVariables?: string
 }
 
 export type AssertionType =

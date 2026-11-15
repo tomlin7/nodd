@@ -44,6 +44,8 @@ export function interpolateRequest(req: HttpRequest, env?: Environment | null): 
       rawText: req.body.rawText ? interpolateString(req.body.rawText, vars) : undefined,
       formParams: req.body.formParams ? interpolatePairs(req.body.formParams, vars) : undefined,
       formDataParams: req.body.formDataParams ? (interpolatePairs(req.body.formDataParams, vars) as FormDataParam[]) : undefined,
+      graphqlQuery: req.body.graphqlQuery ? interpolateString(req.body.graphqlQuery, vars) : undefined,
+      graphqlVariables: req.body.graphqlVariables ? interpolateString(req.body.graphqlVariables, vars) : undefined,
     },
     auth: {
       ...req.auth,

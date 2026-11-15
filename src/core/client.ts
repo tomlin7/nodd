@@ -98,6 +98,21 @@ export async function executeRequest(
         bodyPayload = form
         // Let the fetch runtime automatically set the Content-Type with boundary
         headers.delete('content-type')
+      } else if (req.body.type === 'graphql') {
+        const payload: { query: string; variables?: Record<string, any> } = {
+          query: req.body.graphqlQuery ?? '',
+        }
+        if (req.body.graphqlVariables && req.body.graphqlVariables.trim().length > 0) {
+          try {
+            payload.variables = JSON.parse(req.body.graphqlVariables)
+          } catch {
+            // Keep variables omitted or empty if invalid
+          }
+        }
+        bodyPayload = JSON.stringify(payload)
+        if (!headers.has('Content-Type')) {
+          headers.set('Content-Type', 'application/json')
+        }
       }
     }
 

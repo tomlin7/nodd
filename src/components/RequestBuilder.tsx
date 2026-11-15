@@ -106,6 +106,29 @@ export function RequestBuilder({
     }
   }
 
+  // Format GraphQL Variables
+  const handleFormatGraphql = () => {
+    let nextVars = request.body.graphqlVariables
+    if (nextVars && nextVars.trim()) {
+      try {
+        const parsed = JSON.parse(nextVars)
+        nextVars = JSON.stringify(parsed, null, 2)
+        setJsonError(null)
+      } catch (err: any) {
+        setJsonError(err?.message || 'Invalid GraphQL variables JSON')
+        return
+      }
+    }
+    setJsonError(null)
+    onChange({
+      ...request,
+      body: {
+        ...request.body,
+        graphqlVariables: nextVars,
+      },
+    })
+  }
+
   const activeParamsCount = request.params.filter((p) => p.enabled && p.key.trim().length > 0).length
   const activePathVarsCount = pathVariables.filter((p) => p.enabled && p.value.trim().length > 0).length
   const totalParamsCount = activeParamsCount + activePathVarsCount
@@ -545,6 +568,7 @@ export function RequestBuilder({
                 body={request.body}
                 onChange={(nextBody) => onChange({ ...request, body: nextBody })}
                 onFormatJson={handleFormatJson}
+                onFormatGraphql={handleFormatGraphql}
                 jsonError={jsonError}
               />
             )}
@@ -806,11 +830,13 @@ function BodyPane({
   body,
   onChange,
   onFormatJson,
+  onFormatGraphql,
   jsonError,
 }: {
   body: HttpRequest['body']
   onChange: (next: HttpRequest['body']) => void
   onFormatJson: () => void
+  onFormatGraphql: () => void
   jsonError?: string | null
 }) {
   const types: { id: BodyType; label: string }[] = [
@@ -819,6 +845,7 @@ function BodyPane({
     { id: 'raw', label: 'Raw Text' },
     { id: 'x-www-form-urlencoded', label: 'Form URL-Encoded' },
     { id: 'form-data', label: 'Multipart Form' },
+    { id: 'graphql', label: 'GraphQL' },
   ]
 
   return (
@@ -878,6 +905,31 @@ function BodyPane({
             <Icon name="sparkle" size={12} color={C.accent} />
             <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.text, whiteSpace: 'nowrap' }}>
               Format JSON
+            </text>
+          </Button>
+        )}
+
+        {body.type === 'graphql' && (
+          <Button
+            testId="format-graphql-button"
+            onClick={onFormatGraphql}
+            style={{
+              height: 28,
+              paddingLeft: 12,
+              paddingRight: 12,
+              borderRadius: 6,
+              backgroundColor: C.surface,
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+              cursor: 'pointer',
+              hover: { backgroundColor: C.surfaceHighlight },
+            }}
+          >
+            <Icon name="sparkle" size={12} color={C.accent} />
+            <text style={{ fontSize: 12, fontFamily: FONT_SANS, color: C.text, whiteSpace: 'nowrap' }}>
+              Format Variables
             </text>
           </Button>
         )}
@@ -944,6 +996,78 @@ function BodyPane({
           emptyLabel="No multipart form fields defined"
           showTypeSelector
         />
+      )}
+
+      {body.type === 'graphql' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {/* Query section */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <text style={{ fontSize: 12, fontFamily: FONT_SANS, fontWeight: '600', color: C.secondary, whiteSpace: 'nowrap' }}>
+              QUERY
+            </text>
+            <div
+              style={{
+                borderRadius: 8,
+                backgroundColor: C.surface,
+                padding: 12,
+              }}
+            >
+              <textarea
+                testId="graphql-query-editor"
+                value={body.graphqlQuery ?? ''}
+                placeholder={"query GetUser($id: ID!) {\n  user(id: $id) {\n    id\n    name\n  }\n}"}
+                minRows={6}
+                maxRows={14}
+                theme={{ text: C.text, textMuted: C.secondary, textFaint: C.tertiary }}
+                style={{
+                  width: '100%',
+                  fontSize: 13,
+                  lineHeight: 20,
+                  fontFamily: FONT_MONO,
+                  color: C.text,
+                  backgroundColor: 'transparent',
+                  borderWidth: 0,
+                  padding: 0,
+                }}
+                onChange={(e) => onChange({ ...body, graphqlQuery: e.value ?? '' })}
+              />
+            </div>
+          </div>
+
+          {/* Variables section */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <text style={{ fontSize: 12, fontFamily: FONT_SANS, fontWeight: '600', color: C.secondary, whiteSpace: 'nowrap' }}>
+              GRAPHQL VARIABLES (JSON)
+            </text>
+            <div
+              style={{
+                borderRadius: 8,
+                backgroundColor: C.surface,
+                padding: 12,
+              }}
+            >
+              <textarea
+                testId="graphql-variables-editor"
+                value={body.graphqlVariables ?? ''}
+                placeholder={'{\n  "id": "123"\n}'}
+                minRows={4}
+                maxRows={10}
+                theme={{ text: C.text, textMuted: C.secondary, textFaint: C.tertiary }}
+                style={{
+                  width: '100%',
+                  fontSize: 13,
+                  lineHeight: 20,
+                  fontFamily: FONT_MONO,
+                  color: C.text,
+                  backgroundColor: 'transparent',
+                  borderWidth: 0,
+                  padding: 0,
+                }}
+                onChange={(e) => onChange({ ...body, graphqlVariables: e.value ?? '' })}
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
