@@ -263,6 +263,16 @@ export function generateCurlSnippet(req: HttpRequest, env?: Environment | null):
         }
       }
     }
+  } else if (req.body.type === 'graphql') {
+    const query = env ? interpolateString(req.body.graphqlQuery ?? '', env.variables) : (req.body.graphqlQuery ?? '')
+    const varsStr = env ? interpolateString(req.body.graphqlVariables ?? '', env.variables) : (req.body.graphqlVariables ?? '')
+    let varsObj: any = undefined
+    if (varsStr.trim()) {
+      try { varsObj = JSON.parse(varsStr) } catch {}
+    }
+    const payload = JSON.stringify({ query, ...(varsObj !== undefined ? { variables: varsObj } : {}) })
+    parts.push(`  -H "Content-Type: application/json"`)
+    parts.push(`  -d '${payload.replace(/'/g, "'\\''")}'`)
   }
 
   return parts.join(' \\\n')
@@ -313,6 +323,16 @@ export function generateFetchSnippet(req: HttpRequest, env?: Environment | null)
   } else if (req.body.type === 'raw' && req.body.rawText) {
     headersObj['Content-Type'] = 'text/plain'
     bodyStr = env ? interpolateString(req.body.rawText, env.variables) : req.body.rawText
+  } else if (req.body.type === 'graphql') {
+    headersObj['Content-Type'] = 'application/json'
+    const query = env ? interpolateString(req.body.graphqlQuery ?? '', env.variables) : (req.body.graphqlQuery ?? '')
+    const varsStr = env ? interpolateString(req.body.graphqlVariables ?? '', env.variables) : (req.body.graphqlVariables ?? '')
+    let varsObj: any = undefined
+    if (varsStr.trim()) {
+      try { varsObj = JSON.parse(varsStr) } catch {}
+    }
+    const payload = { query, ...(varsObj !== undefined ? { variables: varsObj } : {}) }
+    bodyStr = JSON.stringify(payload)
   }
 
   if (req.body.type === 'form-data' && req.body.formDataParams) {
@@ -413,6 +433,16 @@ export function generatePythonSnippet(req: HttpRequest, env?: Environment | null
       lines.push(`files = {\n${fileLines.join(',\n')}\n}`)
       bodyArg += ', files=files'
     }
+  } else if (req.body.type === 'graphql') {
+    const query = env ? interpolateString(req.body.graphqlQuery ?? '', env.variables) : (req.body.graphqlQuery ?? '')
+    const varsStr = env ? interpolateString(req.body.graphqlVariables ?? '', env.variables) : (req.body.graphqlVariables ?? '')
+    let varsObj: any = undefined
+    if (varsStr.trim()) {
+      try { varsObj = JSON.parse(varsStr) } catch {}
+    }
+    const payload = { query, ...(varsObj !== undefined ? { variables: varsObj } : {}) }
+    lines.push(`payload = ${JSON.stringify(payload, null, 4)}`)
+    bodyArg = ', json=payload'
   }
 
   const args = ['url']

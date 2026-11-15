@@ -194,4 +194,41 @@ describe('Postman v2.1 Import & Export Engine', () => {
     expect(itemReq.body.formdata[0]).toEqual({ key: 'description', value: 'My Document', type: 'text', disabled: false })
     expect(itemReq.body.formdata[1]).toEqual({ key: 'attachment', src: '/documents/doc.pdf', type: 'file', disabled: false })
   })
+
+  test('imports and exports GraphQL body in Postman v2.1 schema', () => {
+    const postmanJson = JSON.stringify({
+      info: { name: 'GraphQL Collection', schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json' },
+      item: [
+        {
+          name: 'GraphQL Query',
+          request: {
+            method: 'POST',
+            url: 'https://api.example.com/graphql',
+            body: {
+              mode: 'graphql',
+              graphql: {
+                query: 'query GetAccount($id: String) { account(id: $id) { name } }',
+                variables: '{"id": "acc_1"}',
+              },
+            },
+          },
+        },
+      ],
+    })
+
+    const col = importPostmanCollection(postmanJson)
+    expect(col.requests.length).toBe(1)
+    const req = col.requests[0]
+    expect(req.body.type).toBe('graphql')
+    expect(req.body.graphqlQuery).toBe('query GetAccount($id: String) { account(id: $id) { name } }')
+    expect(req.body.graphqlVariables).toBe('{"id": "acc_1"}')
+
+    const exported = JSON.parse(exportPostmanCollection(col))
+    const itemReq = exported.item[0].request
+    expect(itemReq.body.mode).toBe('graphql')
+    expect(itemReq.body.graphql).toEqual({
+      query: 'query GetAccount($id: String) { account(id: $id) { name } }',
+      variables: '{"id": "acc_1"}',
+    })
+  })
 })

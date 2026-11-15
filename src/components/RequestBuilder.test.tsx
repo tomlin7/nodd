@@ -142,4 +142,39 @@ describe('Request Builder Logic', () => {
     }
     expect(req.body.formDataParams?.[0].type).toBe('file')
   })
+
+  it('supports GraphQL body configuration with query, variables, and formatting', () => {
+    let req: HttpRequest = {
+      id: 'req_gql_test',
+      name: 'GraphQL Test',
+      method: 'POST',
+      url: 'https://api.test/graphql',
+      params: [],
+      headers: [],
+      body: {
+        type: 'graphql',
+        graphqlQuery: 'query GetItems { items { id name } }',
+        graphqlVariables: '{"limit":5}',
+      },
+      auth: { type: 'none' },
+    }
+
+    expect(req.body.type).toBe('graphql')
+    expect(req.body.graphqlQuery).toContain('query GetItems')
+
+    // Format variables JSON
+    if (req.body.graphqlVariables) {
+      const parsed = JSON.parse(req.body.graphqlVariables)
+      const formatted = JSON.stringify(parsed, null, 2)
+      req = {
+        ...req,
+        body: {
+          ...req.body,
+          graphqlVariables: formatted,
+        },
+      }
+    }
+
+    expect(req.body.graphqlVariables).toBe('{\n  "limit": 5\n}')
+  })
 })

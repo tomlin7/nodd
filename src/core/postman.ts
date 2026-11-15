@@ -27,6 +27,7 @@ export interface PostmanRequestObject {
     raw?: string
     urlencoded?: Array<{ key?: string; value?: string; disabled?: boolean }>
     formdata?: Array<{ key?: string; value?: string; src?: string; type?: string; disabled?: boolean; description?: string }>
+    graphql?: { query?: string; variables?: string }
   }
   auth?: {
     type?: string
@@ -146,6 +147,14 @@ function parsePostmanBody(bodyInput?: PostmanRequestObject['body']): BodyConfig 
         enabled: f.disabled !== true,
         description: f.description,
       })),
+    }
+  }
+
+  if (mode === 'graphql' && bodyInput.graphql) {
+    return {
+      type: 'graphql',
+      graphqlQuery: bodyInput.graphql.query ?? '',
+      graphqlVariables: bodyInput.graphql.variables ?? '',
     }
   }
 
@@ -347,6 +356,14 @@ function serializeHttpRequestToPostman(req: HttpRequest): PostmanItemObject {
         disabled: !f.enabled,
         description: f.description,
       })),
+    }
+  } else if (req.body.type === 'graphql') {
+    body = {
+      mode: 'graphql',
+      graphql: {
+        query: req.body.graphqlQuery ?? '',
+        variables: req.body.graphqlVariables ?? '',
+      },
     }
   }
 

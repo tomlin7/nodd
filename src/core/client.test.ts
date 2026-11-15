@@ -56,6 +56,13 @@ describe('HTTP Client Engine', () => {
           })
         }
 
+        if (url.pathname === '/graphql') {
+          const json = await req.json()
+          return new Response(JSON.stringify({ received: json, contentType: req.headers.get('content-type') }), {
+            headers: { 'Content-Type': 'application/json' },
+          })
+        }
+
         if (url.pathname === '/delay') {
           await new Promise((r) => setTimeout(r, 100))
           return new Response('delayed')
@@ -206,5 +213,29 @@ describe('HTTP Client Engine', () => {
     } finally {
       if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile)
     }
+  })
+
+  it('executes a POST request with GraphQL body and variables', async () => {
+    const req: HttpRequest = {
+      id: 'req_graphql',
+      name: 'Test GraphQL',
+      method: 'POST',
+      url: `${serverUrl}/graphql`,
+      params: [],
+      headers: [],
+      body: {
+        type: 'graphql',
+        graphqlQuery: 'query GetItem($id: ID!) { item(id: $id) { name } }',
+        graphqlVariables: JSON.stringify({ id: 'item_123' }),
+      },
+      auth: { type: 'none' },
+    }
+
+    const res = await executeRequest(req)
+    expect(res.status).toBe(200)
+    const json = JSON.parse(res.body)
+    expect(json.contentType).toBe('application/json')
+    expect(json.received.query).toBe('query GetItem($id: ID!) { item(id: $id) { name } }')
+    expect(json.received.variables).toEqual({ id: 'item_123' })
   })
 })

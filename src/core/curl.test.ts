@@ -172,4 +172,36 @@ describe('cURL Parser & Snippet Generator', () => {
     expect(pythonSnippet).toContain('files = {')
     expect(pythonSnippet).toContain('"avatar": open("/tmp/avatar.png", "rb")')
   })
+
+  test('generates curl, fetch, and python snippets for GraphQL queries and variables', () => {
+    const req: HttpRequest = {
+      id: 'test_gql',
+      name: 'GraphQL Test',
+      method: 'POST',
+      url: 'https://api.example.com/graphql',
+      params: [],
+      headers: [],
+      body: {
+        type: 'graphql',
+        graphqlQuery: 'query Users($limit: Int) { users(limit: $limit) { id name } }',
+        graphqlVariables: '{"limit": 10}',
+      },
+      auth: { type: 'none' },
+    }
+
+    const curl = generateCurlSnippet(req)
+    expect(curl).toContain('-H "Content-Type: application/json"')
+    expect(curl).toContain('"query":"query Users($limit: Int)')
+    expect(curl).toContain('"variables":{"limit":10}')
+
+    const fetchSnippet = generateFetchSnippet(req)
+    expect(fetchSnippet).toContain('fetch("https://api.example.com/graphql"')
+    expect(fetchSnippet).toContain('"Content-Type": "application/json"')
+    expect(fetchSnippet).toContain('query Users')
+
+    const pythonSnippet = generatePythonSnippet(req)
+    expect(pythonSnippet).toContain('requests.post(')
+    expect(pythonSnippet).toContain('json=payload')
+    expect(pythonSnippet).toContain('"query": "query Users')
+  })
 })
